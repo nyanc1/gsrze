@@ -3,180 +3,398 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Zgłoszenie zdarzenia cateringowego</title>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+  <title>System zgłoszeń cateringowych | FreshDelivery</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
-    * { 
+    :root {
+      --primary: #4361ee;
+      --primary-light: #4895ef;
+      --primary-dark: #3a56d4;
+      --success: #4cc9f0;
+      --danger: #f72585;
+      --warning: #f8961e;
+      --light: #f8f9fa;
+      --dark: #212529;
+      --gray: #6c757d;
+      --border-radius: 12px;
+      --shadow-sm: 0 2px 8px rgba(0,0,0,0.1);
+      --shadow-md: 0 4px 12px rgba(0,0,0,0.15);
+      --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    }
+
+    * {
       box-sizing: border-box;
       margin: 0;
       padding: 0;
       font-family: 'Poppins', sans-serif;
     }
+
     body {
-      background-color: #f5f7fa;
-      padding: 20px;
-      color: #333;
+      background: linear-gradient(135deg, #f5f7fa 0%, #e4e8f0 100%);
+      color: var(--dark);
+      min-height: 100vh;
+      padding: 2rem;
     }
+
     .container {
-      max-width: 600px;
+      max-width: 700px;
       margin: 0 auto;
       background: white;
-      border-radius: 10px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      border-radius: var(--border-radius);
+      box-shadow: var(--shadow-md);
+      overflow: hidden;
+      transform: translateY(-20px);
+      opacity: 0;
+      animation: fadeInUp 0.6s 0.2s forwards;
+    }
+
+    @keyframes fadeInUp {
+      to { transform: translateY(0); opacity: 1; }
+    }
+
+    .header {
+      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+      color: white;
+      padding: 2rem;
+      text-align: center;
+      position: relative;
       overflow: hidden;
     }
-    .header {
-      background: linear-gradient(135deg, #4361ee, #3a56d4);
-      color: white;
-      padding: 20px;
-      text-align: center;
+
+    .header::before {
+      content: "";
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+      transform: rotate(30deg);
     }
+
+    .header h1 {
+      font-size: 2rem;
+      margin-bottom: 0.5rem;
+      position: relative;
+    }
+
+    .header p {
+      opacity: 0.9;
+      font-weight: 300;
+      position: relative;
+    }
+
     .form-container {
-      padding: 25px;
+      padding: 2rem;
     }
+
     .form-group {
-      margin-bottom: 20px;
+      margin-bottom: 1.5rem;
+      position: relative;
+      animation: fadeIn 0.6s forwards;
+      animation-delay: calc(var(--order) * 0.1s);
+      opacity: 0;
     }
+
+    @keyframes fadeIn {
+      to { opacity: 1; }
+    }
+
     label {
       display: block;
-      margin-bottom: 8px;
+      margin-bottom: 0.5rem;
       font-weight: 500;
+      color: var(--dark);
+      transition: var(--transition);
     }
-    input, select, textarea {
+
+    .form-control {
       width: 100%;
-      padding: 12px;
+      padding: 0.8rem 1rem;
       border: 2px solid #e2e8f0;
-      border-radius: 8px;
-      font-size: 16px;
-      transition: all 0.3s;
+      border-radius: var(--border-radius);
+      font-size: 1rem;
+      transition: var(--transition);
+      background-color: var(--light);
     }
-    input:focus, select:focus, textarea:focus {
+
+    .form-control:focus {
       outline: none;
-      border-color: #4895ef;
-      box-shadow: 0 0 0 3px rgba(72, 149, 239, 0.1);
+      border-color: var(--primary-light);
+      box-shadow: 0 0 0 3px rgba(72, 149, 239, 0.2);
     }
-    select {
+
+    select.form-control {
       appearance: none;
       background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
       background-repeat: no-repeat;
-      background-position: right 12px center;
-      background-size: 16px;
+      background-position: right 1rem center;
+      background-size: 1rem;
     }
-    button {
-      background-color: #4361ee;
-      color: white;
-      border: none;
-      padding: 14px;
-      font-size: 16px;
-      font-weight: 500;
-      width: 100%;
-      border-radius: 8px;
-      cursor: pointer;
-      transition: all 0.3s;
-      display: flex;
+
+    textarea.form-control {
+      min-height: 120px;
+      resize: vertical;
+    }
+
+    .btn {
+      display: inline-flex;
       align-items: center;
       justify-content: center;
-      gap: 10px;
+      gap: 0.8rem;
+      background: linear-gradient(to right, var(--primary), var(--primary-light));
+      color: white;
+      border: none;
+      padding: 1rem;
+      font-size: 1rem;
+      font-weight: 600;
+      width: 100%;
+      border-radius: var(--border-radius);
+      cursor: pointer;
+      transition: var(--transition);
+      box-shadow: var(--shadow-sm);
+      position: relative;
+      overflow: hidden;
     }
-    button:hover {
-      background-color: #3a56d4;
+
+    .btn::after {
+      content: "";
+      position: absolute;
+      top: -50%;
+      left: -60%;
+      width: 200%;
+      height: 200%;
+      background: linear-gradient(
+        to right,
+        rgba(255, 255, 255, 0) 0%,
+        rgba(255, 255, 255, 0.1) 50%,
+        rgba(255, 255, 255, 0) 100%
+      );
+      transform: rotate(30deg);
+      transition: var(--transition);
     }
-    button:disabled {
-      background-color: #cccccc;
+
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-md);
+    }
+
+    .btn:hover::after {
+      left: 100%;
+    }
+
+    .btn:disabled {
+      background: var(--gray);
+      transform: none !important;
+      box-shadow: none;
       cursor: not-allowed;
     }
+
     .hidden {
       display: none;
     }
+
+    .dynamic-section {
+      margin-top: 2rem;
+      padding-top: 2rem;
+      border-top: 1px dashed #e2e8f0;
+      animation: fadeIn 0.6s forwards;
+    }
+
     .file-info {
-      font-size: 13px;
-      color: #666;
-      margin-top: 5px;
+      font-size: 0.85rem;
+      color: var(--gray);
+      margin-top: 0.5rem;
       display: flex;
       align-items: center;
-      gap: 5px;
+      gap: 0.5rem;
     }
-    .dynamic-section {
-      margin-top: 25px;
-      padding-top: 25px;
-      border-top: 1px solid #eee;
+
+    .loading-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(255, 255, 255, 0.8);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      opacity: 0;
+      pointer-events: none;
+      transition: var(--transition);
     }
-    .loading {
-      text-align: center;
-      padding: 20px;
+
+    .loading-overlay.active {
+      opacity: 1;
+      pointer-events: all;
     }
+
     .spinner {
-      width: 40px;
-      height: 40px;
+      width: 3rem;
+      height: 3rem;
       border: 4px solid rgba(67, 97, 238, 0.1);
-      border-top-color: #4361ee;
+      border-top-color: var(--primary);
       border-radius: 50%;
-      margin: 0 auto 15px;
       animation: spin 1s linear infinite;
+      margin-bottom: 1rem;
     }
+
     @keyframes spin {
       to { transform: rotate(360deg); }
     }
-    .toast {
+
+    .success-message {
       position: fixed;
-      bottom: 20px;
-      right: 20px;
-      padding: 15px 20px;
-      border-radius: 8px;
-      color: white;
-      z-index: 1000;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-      transform: translateY(100px);
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%) scale(0.8);
+      background: white;
+      padding: 2rem;
+      border-radius: var(--border-radius);
+      box-shadow: var(--shadow-md);
+      text-align: center;
+      max-width: 90%;
+      width: 400px;
+      z-index: 1100;
       opacity: 0;
-      transition: all 0.3s;
+      pointer-events: none;
+      transition: var(--transition);
     }
-    .toast.show {
-      transform: translateY(0);
+
+    .success-message.active {
       opacity: 1;
+      transform: translate(-50%, -50%) scale(1);
+      pointer-events: all;
     }
-    .toast.success {
-      background-color: #4cc9f0;
+
+    .success-icon {
+      font-size: 4rem;
+      color: var(--success);
+      margin-bottom: 1rem;
+      animation: bounceIn 0.6s;
     }
-    .toast.error {
-      background-color: #f72585;
+
+    @keyframes bounceIn {
+      0% { transform: scale(0); }
+      50% { transform: scale(1.2); }
+      100% { transform: scale(1); }
+    }
+
+    .overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 1000;
+      opacity: 0;
+      pointer-events: none;
+      transition: var(--transition);
+    }
+
+    .overlay.active {
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    .confetti {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 1050;
+      background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10"><path fill="%234361ee" d="M5,0 L6,3 L9,5 L6,7 L5,10 L4,7 L1,5 L4,3 Z"/></svg>') 
+                  repeat top center;
+      animation: confetti-fall 5s linear forwards;
+      opacity: 0;
+    }
+
+    @keyframes confetti-fall {
+      0% { transform: translateY(-100vh); opacity: 1; }
+      100% { transform: translateY(100vh); opacity: 0; }
+    }
+
+    @media (max-width: 768px) {
+      body {
+        padding: 1rem;
+      }
+      
+      .container {
+        max-width: 100%;
+      }
+      
+      .header {
+        padding: 1.5rem;
+      }
+      
+      .form-container {
+        padding: 1.5rem;
+      }
     }
   </style>
 </head>
 <body>
   <div class="container">
     <div class="header">
-      <h1>Zgłoszenie zdarzenia cateringowego</h1>
+      <h1><i class="fas fa-utensils"></i> FreshDelivery</h1>
+      <p>System zgłoszeń cateringowych</p>
     </div>
     
     <div class="form-container">
       <form id="incidentForm" enctype="multipart/form-data">
-        <div class="form-group">
+        <!-- Miasto -->
+        <div class="form-group" style="--order: 1">
           <label for="miasto"><i class="fas fa-city"></i> Miasto</label>
-          <input type="text" id="miasto" name="miasto" list="listaMiast" required>
-          <datalist id="listaMiast"></datalist>
+          <input type="text" id="miasto" name="miasto" class="form-control" list="listaMiast" required>
+          <datalist id="listaMiast">
+            <option value="Warszawa">
+            <option value="Kraków">
+            <option value="Wrocław">
+            <option value="Poznań">
+          </datalist>
         </div>
         
-        <div class="form-group">
+        <!-- Ulica -->
+        <div class="form-group" style="--order: 2">
           <label for="ulica"><i class="fas fa-road"></i> Ulica</label>
-          <input type="text" id="ulica" name="ulica" list="listaUlic" required>
-          <datalist id="listaUlic"></datalist>
+          <input type="text" id="ulica" name="ulica" class="form-control" list="listaUlic" required>
+          <datalist id="listaUlic">
+            <option value="Aleje Jerozolimskie">
+            <option value="Marszałkowska">
+            <option value="Krakowska">
+            <option value="Gdańska">
+          </datalist>
         </div>
         
-        <div class="form-group">
+        <!-- Numer -->
+        <div class="form-group" style="--order: 3">
           <label for="numer"><i class="fas fa-home"></i> Nr domu/mieszkania</label>
-          <input type="text" id="numer" name="numer" required>
+          <input type="text" id="numer" name="numer" class="form-control" required>
         </div>
         
-        <div class="form-group">
+        <!-- Catering -->
+        <div class="form-group" style="--order: 4">
           <label for="katering"><i class="fas fa-warehouse"></i> Wybierz catering</label>
-          <select id="katering" name="katering" required>
-            <option value="">Ładowanie listy cateringów...</option>
+          <select id="katering" name="katering" class="form-control" required>
+            <option value="">-- Wybierz catering --</option>
+            <option value="Catering A">Catering A</option>
+            <option value="Catering B">Catering B</option>
+            <option value="Catering C">Catering C</option>
+            <option value="Catering D">Catering D</option>
           </select>
         </div>
         
-        <div class="form-group">
+        <!-- Zdarzenie -->
+        <div class="form-group" style="--order: 5">
           <label for="zdarzenie"><i class="fas fa-exclamation-circle"></i> Typ zdarzenia</label>
-          <select id="zdarzenie" name="zdarzenie" required>
+          <select id="zdarzenie" name="zdarzenie" class="form-control" required>
             <option value="">-- Wybierz typ zdarzenia --</option>
             <option value="BRAK PACZKI">BRAK PACZKI</option>
             <option value="DODATKOWA PACZKA">DODATKOWA PACZKA</option>
@@ -185,10 +403,11 @@
           </select>
         </div>
         
+        <!-- Ilość paczek (dynamiczne) -->
         <div id="poleIlosc" class="dynamic-section hidden">
           <div class="form-group">
             <label for="ilosc"><i class="fas fa-boxes"></i> Ilość paczek</label>
-            <select id="ilosc" name="ilosc">
+            <select id="ilosc" name="ilosc" class="form-control">
               <option value="1">1</option>
               <option value="2">2</option>
               <option value="3">3</option>
@@ -198,135 +417,98 @@
           </div>
         </div>
         
+        <!-- Uszkodzenia (tylko zdjęcia) -->
         <div id="poleUszkodzenie" class="dynamic-section hidden">
           <div class="form-group">
             <label for="rodzaj_uszkodzenia"><i class="fas fa-tools"></i> Rodzaj uszkodzenia</label>
-            <select id="rodzaj_uszkodzenia" name="rodzaj_uszkodzenia">
+            <select id="rodzaj_uszkodzenia" name="rodzaj_uszkodzenia" class="form-control">
               <option value="ROZSZCZELNIONY POJEMNIK">ROZSZCZELNIONY POJEMNIK</option>
               <option value="USZKODZONY POJEMNIK">USZKODZONY POJEMNIK</option>
             </select>
           </div>
           <div class="form-group">
             <label for="zdjecia_uszkodzenia"><i class="fas fa-camera"></i> Zdjęcia uszkodzeń (max 5)</label>
-            <input type="file" id="zdjecia_uszkodzenia" name="zdjecia_uszkodzenia" accept="image/*" multiple>
-            <div class="file-info">Maksymalny rozmiar: 10MB na zdjęcie</div>
-          </div>
-          <div class="form-group">
-            <label for="filmy_uszkodzenia"><i class="fas fa-video"></i> Filmy uszkodzeń (max 2)</label>
-            <input type="file" id="filmy_uszkodzenia" name="filmy_uszkodzenia" accept="video/*" multiple>
-            <div class="file-info">Maksymalny rozmiar: 25MB na film</div>
+            <input type="file" id="zdjecia_uszkodzenia" name="zdjecia_uszkodzenia" class="form-control" accept="image/*" multiple>
+            <div class="file-info"><i class="fas fa-info-circle"></i> Maksymalny rozmiar: 10MB na zdjęcie</div>
           </div>
         </div>
         
+        <!-- Niedoręczenie -->
         <div id="poleOpisZdjecia" class="dynamic-section hidden">
           <div class="form-group">
             <label for="opis"><i class="fas fa-comment-alt"></i> Opis zdarzenia</label>
-            <textarea id="opis" name="opis" rows="4" required></textarea>
-          </div>
-          <div class="form-group">
-            <label for="zdjecia"><i class="fas fa-camera"></i> Zdjęcia (max 5)</label>
-            <input type="file" id="zdjecia" name="zdjecia" accept="image/*" multiple>
-            <div class="file-info">Maksymalny rozmiar: 10MB na zdjęcie</div>
-          </div>
-          <div class="form-group">
-            <label for="filmy"><i class="fas fa-video"></i> Filmy (max 2)</label>
-            <input type="file" id="filmy" name="filmy" accept="video/*" multiple>
-            <div class="file-info">Maksymalny rozmiar: 25MB na film</div>
+            <textarea id="opis" name="opis" class="form-control" rows="4" required></textarea>
           </div>
         </div>
         
-        <div id="loading" class="loading hidden">
-          <div class="spinner"></div>
-          <p id="loadingText">Trwa przetwarzanie zgłoszenia...</p>
-        </div>
-        
-        <button type="submit" id="submitBtn">
+        <button type="submit" class="btn" id="submitBtn" style="--order: 6">
           <i class="fas fa-paper-plane"></i> Wyślij zgłoszenie
         </button>
       </form>
     </div>
   </div>
 
+  <!-- Overlay ładowania -->
+  <div class="loading-overlay" id="loadingOverlay">
+    <div class="spinner"></div>
+    <p id="loadingText">Trwa wysyłanie zgłoszenia...</p>
+  </div>
+
+  <!-- Komunikat sukcesu -->
+  <div class="overlay" id="overlay"></div>
+  <div class="success-message" id="successMessage">
+    <div class="success-icon">
+      <i class="fas fa-check-circle"></i>
+    </div>
+    <h3>Zgłoszenie wysłane!</h3>
+    <p>Twoje zgłoszenie zostało pomyślnie przesłane.</p>
+    <p>Numer zgłoszenia: <strong id="reportNumber"></strong></p>
+    <button class="btn" id="closeSuccessBtn" style="margin-top: 1.5rem;">
+      <i class="fas fa-times"></i> Zamknij
+    </button>
+  </div>
+
+  <!-- Confetti -->
+  <div class="confetti" id="confetti"></div>
+
   <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
   <script>
     // Konfiguracja
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxZSt-MbO5tVsQDbuAEoUc9KbPCS5A3eciyeZB_RsuXDW4hRJ6Z6yHrMzuUZSGMpedIVg/exec";
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwxp-jqHe7sPTRRIanoHqg2KWTk5vXs4EGIkWd_4WeBoSxrNwMmBvrp-89AYkN8z8iv9A/exec";
     const MAX_IMAGE_SIZE = 10 * 1024 * 1024; // 10MB
-    const MAX_VIDEO_SIZE = 25 * 1024 * 1024; // 25MB
     
-    document.addEventListener('DOMContentLoaded', function() {
-      initApplication();
+    // Elementy DOM
+    const form = document.getElementById('incidentForm');
+    const zdarzenieSelect = document.getElementById('zdarzenie');
+    const loadingOverlay = document.getElementById('loadingOverlay');
+    const successMessage = document.getElementById('successMessage');
+    const overlay = document.getElementById('overlay');
+    const reportNumber = document.getElementById('reportNumber');
+    const closeSuccessBtn = document.getElementById('closeSuccessBtn');
+    const confetti = document.getElementById('confetti');
+
+    // Inicjalizacja
+    document.addEventListener('DOMContentLoaded', () => {
+      setupEventListeners();
     });
 
-    async function initApplication() {
-      try {
-        await loadSelectOptions();
-        setupEventListeners();
-      } catch (error) {
-        showToast('Błąd inicjalizacji aplikacji', 'error');
-        console.error('Init error:', error);
-      }
-    }
-
-    async function loadSelectOptions() {
-      try {
-        showLoading('Ładowanie danych...');
-        
-        // Tutaj możesz wczytać dane z pliku JSON lub API
-        const cateringList = [
-          "Catering A", "Catering B", "Catering C", "Catering D"
-        ];
-        
-        const miastaList = ["Warszawa", "Kraków", "Wrocław", "Poznań"];
-        const uliceList = ["Aleje Jerozolimskie", "Marszałkowska", "Krakowska", "Gdańska"];
-        
-        populateSelect('katering', cateringList, '-- Wybierz catering --');
-        populateDatalist('listaMiast', miastaList);
-        populateDatalist('listaUlic', uliceList);
-        
-        hideLoading();
-      } catch (error) {
-        hideLoading();
-        showToast('Błąd ładowania danych', 'error');
-        throw error;
-      }
-    }
-
-    function populateSelect(elementId, items, placeholder = '') {
-      const select = document.getElementById(elementId);
-      if (!select) return;
-      
-      select.innerHTML = items.length > 0
-        ? `<option value="">${placeholder}</option>${items.map(item => `
-          <option value="${item}">${item}</option>`).join('')}`
-        : `<option value="">Brak danych</option>`;
-    }
-
-    function populateDatalist(datalistId, items) {
-      const datalist = document.getElementById(datalistId);
-      if (datalist) {
-        datalist.innerHTML = items.map(item => `<option value="${item}">`).join('');
-      }
-    }
-
+    // Obsługa zdarzeń
     function setupEventListeners() {
-      document.getElementById('zdarzenie').addEventListener('change', function(e) {
-        toggleFormSections(e.target.value);
-      });
-
-      document.getElementById('incidentForm').addEventListener('submit', async function(e) {
-        e.preventDefault();
-        await submitForm(this);
-      });
+      zdarzenieSelect.addEventListener('change', toggleFormSections);
+      form.addEventListener('submit', handleSubmit);
+      closeSuccessBtn.addEventListener('click', closeSuccessMessage);
     }
 
-    function toggleFormSections(selectedEvent) {
-      // Hide all sections
+    // Przełączanie sekcji formularza
+    function toggleFormSections() {
+      const selectedEvent = zdarzenieSelect.value;
+      
+      // Ukryj wszystkie sekcje
       document.querySelectorAll('.dynamic-section').forEach(section => {
         section.classList.add('hidden');
       });
 
-      // Show relevant section
+      // Pokaż odpowiednią sekcję
       switch(selectedEvent) {
         case 'BRAK PACZKI':
         case 'DODATKOWA PACZKA':
@@ -341,14 +523,13 @@
       }
     }
 
-    async function submitForm(form) {
-      const submitBtn = document.getElementById('submitBtn');
-      submitBtn.disabled = true;
-      showLoading('Wysyłanie zgłoszenia...');
+    // Obsługa wysyłania formularza
+    async function handleSubmit(e) {
+      e.preventDefault();
+      showLoading();
 
       try {
-        validateForm(form);
-        validateFiles();
+        validateForm();
         
         const formData = new FormData(form);
         const response = await fetch(SCRIPT_URL, {
@@ -356,28 +537,25 @@
           body: formData
         });
 
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
+        if (!response.ok) throw new Error('Błąd połączenia');
+        
         const result = await response.json();
         
         if (result.success) {
-          showToast('Zgłoszenie zostało wysłane!', 'success');
+          showSuccess(result.reportId);
           form.reset();
         } else {
-          throw new Error(result.message || 'Błąd podczas przetwarzania zgłoszenia');
+          throw new Error(result.message || 'Błąd przetwarzania');
         }
       } catch (error) {
-        console.error('Submit error:', error);
-        showToast(error.message || 'Wystąpił błąd podczas wysyłania', 'error');
+        alert(error.message || 'Wystąpił błąd. Spróbuj ponownie.');
       } finally {
-        submitBtn.disabled = false;
         hideLoading();
       }
     }
 
-    function validateForm(form) {
+    // Walidacja formularza
+    function validateForm() {
       const requiredFields = ['miasto', 'ulica', 'katering', 'zdarzenie'];
       const missingFields = [];
       
@@ -391,57 +569,62 @@
         throw new Error(`Wypełnij wymagane pola: ${missingFields.join(', ')}`);
       }
       
-      if (form.zdarzenie.value === 'NIEDORECZENIE' && !form.opis.value.trim()) {
+      if (zdarzenieSelect.value === 'NIEDORECZENIE' && !form.opis.value.trim()) {
         form.opis.focus();
         throw new Error('Opis jest wymagany dla zgłoszeń typu NIEDORECZENIE');
       }
-    }
 
-    function validateFiles() {
-      const validateFileGroup = (inputId, maxSize, maxCount) => {
-        const input = document.getElementById(inputId);
-        if (!input) return;
-
-        const files = input.files;
-        if (files.length > maxCount) {
-          throw new Error(`Można dodać maksymalnie ${maxCount} plików`);
+      // Walidacja zdjęć dla uszkodzeń
+      if (zdarzenieSelect.value === 'USZKODZENIE PACZKI') {
+        const files = form['zdjecia_uszkodzenia'].files;
+        if (files.length > 5) {
+          throw new Error('Można dodać maksymalnie 5 zdjęć');
         }
-
+        
         Array.from(files).forEach(file => {
-          if (file.size > maxSize) {
-            throw new Error(`Plik ${file.name} przekracza limit ${maxSize/1024/1024}MB`);
+          if (file.size > MAX_IMAGE_SIZE) {
+            throw new Error(`Zdjęcie ${file.name} przekracza limit 10MB`);
           }
         });
-      };
-
-      validateFileGroup('zdjecia_uszkodzenia', MAX_IMAGE_SIZE, 5);
-      validateFileGroup('filmy_uszkodzenia', MAX_VIDEO_SIZE, 2);
-      validateFileGroup('zdjecia', MAX_IMAGE_SIZE, 5);
-      validateFileGroup('filmy', MAX_VIDEO_SIZE, 2);
+      }
     }
 
-    function showLoading(message) {
-      document.getElementById('loadingText').textContent = message;
-      document.getElementById('loading').classList.remove('hidden');
+    // Pokazanie ładowania
+    function showLoading() {
+      loadingOverlay.classList.add('active');
+      document.getElementById('submitBtn').disabled = true;
     }
 
+    // Ukrycie ładowania
     function hideLoading() {
-      document.getElementById('loading').classList.add('hidden');
+      loadingOverlay.classList.remove('active');
+      document.getElementById('submitBtn').disabled = false;
     }
 
-    function showToast(message, type = 'info') {
-      const toast = document.createElement('div');
-      toast.className = `toast ${type}`;
-      toast.textContent = message;
-      document.body.appendChild(toast);
+    // Pokazanie komunikatu sukcesu
+    function showSuccess(reportId) {
+      reportNumber.textContent = `#${reportId}`;
+      overlay.classList.add('active');
+      successMessage.classList.add('active');
+      triggerConfetti();
+    }
+
+    // Zamknięcie komunikatu sukcesu
+    function closeSuccessMessage() {
+      overlay.classList.remove('active');
+      successMessage.classList.remove('active');
+    }
+
+    // Animacja confetti
+    function triggerConfetti() {
+      confetti.style.opacity = '1';
+      confetti.style.animation = 'none';
+      void confetti.offsetWidth; // Trigger reflow
+      confetti.style.animation = 'confetti-fall 5s linear forwards';
       
       setTimeout(() => {
-        toast.classList.add('show');
-        setTimeout(() => {
-          toast.classList.remove('show');
-          setTimeout(() => toast.remove(), 300);
-        }, 5000);
-      }, 10);
+        confetti.style.opacity = '0';
+      }, 5000);
     }
   </script>
 </body>
