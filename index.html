@@ -196,17 +196,6 @@
       align-items: center;
     }
 
-    .badge {
-      display: inline-block;
-      padding: 4px 8px;
-      font-size: 12px;
-      font-weight: 500;
-      border-radius: 20px;
-      background: var(--primary);
-      color: white;
-      margin-left: 8px;
-    }
-
     #katering-loading {
       font-size: 14px;
       color: var(--gray);
@@ -268,13 +257,29 @@
           </div>
         </div>
 
-        <div id="poleIlosc" class="hidden form-section">
+        <div id="poleBrakPaczki" class="hidden form-section">
           <div class="form-section-title">
-            <i class="fas fa-boxes"></i> Ilość paczek
+            <i class="fas fa-boxes"></i> Brak paczki
           </div>
           <div class="form-group">
-            <label for="ilosc"><i class="fas fa-cube icon"></i>Ilość</label>
-            <select name="ilosc">
+            <label for="ilosc_brak"><i class="fas fa-cube icon"></i>Ilość brakujących paczek</label>
+            <select name="ilosc_brak">
+              <option value="1">1</option>
+              <option value="2">2</option>
+              <option value="3">3</option>
+              <option value="4">4</option>
+              <option value="5">5</option>
+            </select>
+          </div>
+        </div>
+        
+        <div id="poleDodatkowaPaczka" class="hidden form-section">
+          <div class="form-section-title">
+            <i class="fas fa-boxes"></i> Dodatkowa paczka
+          </div>
+          <div class="form-group">
+            <label for="ilosc_dod"><i class="fas fa-cube icon"></i>Ilość dodatkowych paczek</label>
+            <select name="ilosc_dod">
               <option value="1">1</option>
               <option value="2">2</option>
               <option value="3">3</option>
@@ -344,7 +349,7 @@
 
   <script>
     // Konfiguracja
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxab0DYxUTPQVcoL3Qltcu0I28g2JQ6YVJV0uRsOWVQ5oywdtPM58_9KlEfu_OyC35owg/exec";
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyFfUM0BpGHqfTcYvQnmTnhdQCkb7LgW0WwzbOUspd_RMCDyoMBKIAIxvteckgvkfb4fw/exec";
     const MAX_IMAGE_SIZE = 10 * 1024 * 1024; // 10MB
     const MAX_VIDEO_SIZE = 25 * 1024 * 1024; // 25MB
     const MAX_IMAGES = 5;
@@ -416,7 +421,8 @@
     // Przełączanie sekcji formularza
     function toggleFormSections(selectedEvent) {
       // Ukryj wszystkie sekcje dodatkowe
-      document.getElementById('poleIlosc').classList.add('hidden');
+      document.getElementById('poleBrakPaczki').classList.add('hidden');
+      document.getElementById('poleDodatkowaPaczka').classList.add('hidden');
       document.getElementById('poleUszkodzenie').classList.add('hidden');
       document.getElementById('poleOpisZdjecia').classList.add('hidden');
       
@@ -429,8 +435,10 @@
       // Pokaż odpowiednie sekcje w zależności od wybranego zdarzenia
       switch(selectedEvent) {
         case 'BRAK PACZKI':
+          document.getElementById('poleBrakPaczki').classList.remove('hidden');
+          break;
         case 'DODATKOWA PACZKA':
-          document.getElementById('poleIlosc').classList.remove('hidden');
+          document.getElementById('poleDodatkowaPaczka').classList.remove('hidden');
           break;
         case 'USZKODZENIE PACZKI':
           document.getElementById('poleUszkodzenie').classList.remove('hidden');
