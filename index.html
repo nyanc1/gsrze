@@ -3,167 +3,396 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Formularz Zgłoszeniowy</title>
+  <title>System zgłoszeń cateringowych</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      background-color: #f4f4f9;
+    :root {
+      --primary: #4361ee;
+      --primary-dark: #3a56d4;
+      --light: #f8f9fa;
+      --dark: #212529;
+      --gray: #6c757d;
+      --success: #4cc9f0;
+      --danger: #f72585;
+      --border-radius: 8px;
+      --shadow-sm: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    * {
+      box-sizing: border-box;
       margin: 0;
       padding: 0;
+      font-family: 'Poppins', sans-serif;
     }
-    .container {
-      max-width: 800px;
-      margin: 30px auto;
-      background-color: #fff;
+
+    body {
+      background-color: #f5f7fa;
+      color: var(--dark);
       padding: 20px;
-      border-radius: 8px;
-      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
     }
-    h1 {
+
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+      background: white;
+      border-radius: var(--border-radius);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .header {
+      background: var(--primary);
+      color: white;
+      padding: 20px;
       text-align: center;
-      color: #333;
+      border-radius: var(--border-radius) var(--border-radius) 0 0;
     }
+
+    .form-container {
+      padding: 20px;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
     label {
-      font-weight: bold;
       display: block;
-      margin: 10px 0 5px;
+      margin-bottom: 8px;
+      font-weight: 500;
     }
+
     input, select, textarea {
       width: 100%;
       padding: 10px;
-      margin: 8px 0 20px;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-    }
-    textarea {
-      height: 100px;
-    }
-    .button {
-      background-color: #4CAF50;
-      color: white;
-      padding: 15px 20px;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-      width: 100%;
+      border: 1px solid #ddd;
+      border-radius: var(--border-radius);
       font-size: 16px;
     }
-    .button:hover {
-      background-color: #45a049;
+
+    select {
+      appearance: none;
+      background: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e") no-repeat;
+      background-position: right 10px center;
+      background-size: 16px;
     }
-    .file-input {
+
+    button {
+      background: var(--primary);
+      color: white;
       border: none;
-      background-color: #f9f9f9;
+      padding: 12px;
+      width: 100%;
+      border-radius: var(--border-radius);
+      font-size: 16px;
+      cursor: pointer;
+      transition: background 0.2s;
     }
-    .file-list {
-      margin-top: 10px;
-      font-size: 14px;
-      color: #555;
+
+    button:hover {
+      background: var(--primary-dark);
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    .file-info {
+      font-size: 13px;
+      color: var(--gray);
+      margin-top: 5px;
+    }
+
+    .loading {
+      text-align: center;
+      padding: 20px;
+    }
+
+    .spinner {
+      width: 30px;
+      height: 30px;
+      border: 3px solid rgba(67, 97, 238, 0.2);
+      border-top-color: var(--primary);
+      border-radius: 50%;
+      margin: 0 auto 10px;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .success-message {
+      background: white;
+      padding: 20px;
+      border-radius: var(--border-radius);
+      text-align: center;
+      margin-top: 20px;
+      border: 1px solid #ddd;
     }
   </style>
 </head>
 <body>
-
-<div class="container">
-  <h1>Formularz Zgłoszeniowy</h1>
-  
-  <form id="form" enctype="multipart/form-data">
-    <label for="miasto">Miasto:</label>
-    <input type="text" id="miasto" name="miasto" required>
-
-    <label for="ulica">Ulica:</label>
-    <input type="text" id="ulica" name="ulica" required>
-
-    <label for="numer">Numer:</label>
-    <input type="text" id="numer" name="numer">
-
-    <label for="katering">Katering:</label>
-    <select id="katering" name="katering" required>
-      <option value="Catering1">Catering 1</option>
-      <option value="Catering2">Catering 2</option>
-      <option value="Catering3">Catering 3</option>
-    </select>
-
-    <label for="zdarzenie">Zdarzenie:</label>
-    <select id="zdarzenie" name="zdarzenie" required>
-      <option value="USZKODZENIE PACZKI">Uszkodzenie paczki</option>
-      <option value="NIEDORECZENIE">Niedoreczenie</option>
-    </select>
-
-    <label for="ilosc">Ilość paczek:</label>
-    <input type="number" id="ilosc" name="ilosc">
-
-    <label for="opis">Opis (Opcjonalnie):</label>
-    <textarea id="opis" name="opis"></textarea>
-
-    <label for="rodzaj_uszkodzenia">Rodzaj uszkodzenia (Opcjonalnie, tylko dla uszkodzenia paczki):</label>
-    <input type="text" id="rodzaj_uszkodzenia" name="rodzaj_uszkodzenia">
-
-    <label for="files">Załączniki (maksymalnie 10 plików):</label>
-    <input type="file" id="files" name="files" multiple class="file-input">
-
-    <div class="file-list" id="fileList"></div>
-
-    <button type="submit" class="button">Wyślij zgłoszenie</button>
-  </form>
-  
-  <div id="responseMessage"></div>
-</div>
-
-<script>
-  const form = document.getElementById("form");
-  const responseMessage = document.getElementById("responseMessage");
-  const fileInput = document.getElementById("files");
-  const fileListDiv = document.getElementById("fileList");
-
-  form.addEventListener("submit", function(e) {
-    e.preventDefault();
-
-    const formData = new FormData(form);
+  <div class="container">
+    <div class="header">
+      <h1>Zgłoszenie zdarzenia</h1>
+    </div>
     
-    const files = fileInput.files;
-    if (files.length > 10) {
-      responseMessage.textContent = "Można dodać maksymalnie 10 plików!";
-      responseMessage.style.color = "red";
-      return;
-    }
-    
-    for (let i = 0; i < files.length; i++) {
-      formData.append("files", files[i]);
-    }
+    <div class="form-container">
+      <form id="incidentForm" enctype="multipart/form-data">
+        <div class="form-group">
+          <label><i class="fas fa-city"></i> Miasto</label>
+          <input type="text" name="miasto" list="listaMiast" required>
+          <datalist id="listaMiast"></datalist>
+        </div>
+        
+        <div class="form-group">
+          <label><i class="fas fa-road"></i> Ulica</label>
+          <input type="text" name="ulica" list="listaUlic" required>
+          <datalist id="listaUlic"></datalist>
+        </div>
+        
+        <div class="form-group">
+          <label><i class="fas fa-home"></i> Nr domu/mieszkania</label>
+          <input type="text" name="numer" required>
+        </div>
+        
+        <div class="form-group">
+          <label><i class="fas fa-warehouse"></i> Wybierz catering</label>
+          <select name="katering" id="katering" required>
+            <option value="">Ładowanie listy...</option>
+          </select>
+        </div>
+        
+        <div class="form-group">
+          <label><i class="fas fa-exclamation-circle"></i> Typ zdarzenia</label>
+          <select name="zdarzenie" id="zdarzenie" required>
+            <option value="">-- Wybierz --</option>
+            <option value="BRAK PACZKI">BRAK PACZKI</option>
+            <option value="DODATKOWA PACZKA">DODATKOWA PACZKA</option>
+            <option value="USZKODZENIE PACZKI">USZKODZENIE PACZKI</option>
+            <option value="NIEDORECZENIE">NIEDORECZENIE / BŁĘDNY ADRES</option>
+          </select>
+        </div>
+        
+        <div id="poleIlosc" class="hidden">
+          <div class="form-group">
+            <label><i class="fas fa-boxes"></i> Ilość paczek</label>
+            <select name="ilosc">
+              <option value="1">1</option>
+              <option value="2">2</option>
+              <option value="3">3</option>
+              <option value="4">4</option>
+              <option value="5">5</option>
+            </select>
+          </div>
+        </div>
+        
+        <div id="poleUszkodzenie" class="hidden">
+          <div class="form-group">
+            <label><i class="fas fa-tools"></i> Rodzaj uszkodzenia</label>
+            <select name="rodzaj_uszkodzenia">
+              <option value="ROZSZCZELNIONY POJEMNIK">ROZSZCZELNIONY POJEMNIK</option>
+              <option value="USZKODZONY POJEMNIK">USZKODZONY POJEMNIK</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label><i class="fas fa-camera"></i> Zdjęcia uszkodzeń (max 5)</label>
+            <input type="file" name="zdjecia_uszkodzenia" accept="image/*" multiple>
+            <div class="file-info">Maksymalny rozmiar: 10MB na zdjęcie</div>
+          </div>
+        </div>
+        
+        <div id="poleOpisZdjecia" class="hidden">
+          <div class="form-group">
+            <label><i class="fas fa-comment-alt"></i> Opis zdarzenia</label>
+            <textarea name="opis" rows="4" required></textarea>
+          </div>
+          <div class="form-group">
+            <label><i class="fas fa-camera"></i> Zdjęcia (max 5)</label>
+            <input type="file" name="zdjecia" accept="image/*" multiple>
+            <div class="file-info">Maksymalny rozmiar: 10MB na zdjęcie</div>
+          </div>
+          <div class="form-group">
+            <label><i class="fas fa-video"></i> Filmy (max 2)</label>
+            <input type="file" name="filmy" accept="video/*" multiple>
+            <div class="file-info">Maksymalny rozmiar: 25MB na film</div>
+          </div>
+        </div>
+        
+        <div id="loading" class="loading hidden">
+          <div class="spinner"></div>
+          <p>Trwa wysyłanie zgłoszenia...</p>
+        </div>
+        
+        <button type="submit" id="submitBtn">
+          <i class="fas fa-paper-plane"></i> Wyślij zgłoszenie
+        </button>
+      </form>
+      
+      <div id="successMessage" class="success-message hidden">
+        <h3><i class="fas fa-check-circle" style="color: var(--success);"></i> Zgłoszenie wysłane!</h3>
+        <p>Numer zgłoszenia: <strong id="reportNumber"></strong></p>
+      </div>
+    </div>
+  </div>
 
-    fetch("https://script.google.com/macros/s/AKfycbxApEWAgvgsjh2a7jFFFxlrLZQPGasCinqvl4FnRzmeFxCaRPgeWC-y9AmVWCfjIa5Khg/exec", {
-      method: "POST",
-      body: formData
-    })
-    .then(response => response.json())
-    .then(data => {
-      if (data.success) {
-        responseMessage.textContent = "Zgłoszenie zostało pomyślnie wysłane!";
-        responseMessage.style.color = "green";
-        form.reset();
-        fileListDiv.innerHTML = '';
-      } else {
-        responseMessage.textContent = `Błąd: ${data.message}`;
-        responseMessage.style.color = "red";
-      }
-    })
-    .catch(error => {
-      responseMessage.textContent = "Wystąpił błąd podczas wysyłania zgłoszenia.";
-      responseMessage.style.color = "red";
+  <script>
+    // Konfiguracja
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwxp-jqHe7sPTRRIanoHqg2KWTk5vXs4EGIkWd_4WeBoSxrNwMmBvrp-89AYkN8z8iv9A/exec";
+    const MAX_IMAGE_SIZE = 10 * 1024 * 1024; // 10MB
+    const MAX_VIDEO_SIZE = 25 * 1024 * 1024; // 25MB
+    
+    // Inicjalizacja
+    document.addEventListener('DOMContentLoaded', async () => {
+      await loadCateringList();
+      setupEventListeners();
     });
-  });
 
-  // Wyświetlanie nazw plików
-  fileInput.addEventListener("change", function() {
-    const files = fileInput.files;
-    const fileNames = [];
-    for (let i = 0; i < files.length; i++) {
-      fileNames.push(files[i].name);
+    // Ładowanie listy cateringów
+    async function loadCateringList() {
+      try {
+        const response = await fetch('cateringlist.json');
+        const data = await response.json();
+        const select = document.getElementById('katering');
+        
+        select.innerHTML = '<option value="">-- Wybierz catering --</option>' +
+          data.caterings.map(c => `<option value="${c}">${c}</option>`).join('');
+      } catch (error) {
+        console.error('Błąd ładowania listy cateringów:', error);
+        document.getElementById('katering').innerHTML = 
+          '<option value="">Błąd ładowania listy</option>';
+      }
     }
-    fileListDiv.innerHTML = "Załączone pliki: " + fileNames.join(", ");
-  });
-</script>
 
+    // Obsługa zdarzeń
+    function setupEventListeners() {
+      document.getElementById('zdarzenie').addEventListener('change', function() {
+        toggleFormSections(this.value);
+      });
+
+      document.getElementById('incidentForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        await submitForm(this);
+      });
+    }
+
+    // Przełączanie sekcji formularza
+    function toggleFormSections(selectedEvent) {
+      document.getElementById('poleIlosc').classList.add('hidden');
+      document.getElementById('poleUszkodzenie').classList.add('hidden');
+      document.getElementById('poleOpisZdjecia').classList.add('hidden');
+
+      switch(selectedEvent) {
+        case 'BRAK PACZKI':
+        case 'DODATKOWA PACZKA':
+          document.getElementById('poleIlosc').classList.remove('hidden');
+          break;
+        case 'USZKODZENIE PACZKI':
+          document.getElementById('poleUszkodzenie').classList.remove('hidden');
+          break;
+        case 'NIEDORECZENIE':
+          document.getElementById('poleOpisZdjecia').classList.remove('hidden');
+          break;
+      }
+    }
+
+    // Wysyłanie formularza
+    async function submitForm(form) {
+      const submitBtn = document.getElementById('submitBtn');
+      submitBtn.disabled = true;
+      document.getElementById('loading').classList.remove('hidden');
+      
+      try {
+        validateForm();
+        
+        const formData = new FormData(form);
+        const response = await fetch(SCRIPT_URL, {
+          method: 'POST',
+          body: formData
+        });
+
+        if (!response.ok) throw new Error('Błąd połączenia');
+        
+        const result = await response.json();
+        
+        if (result.success) {
+          showSuccess(result.reportId);
+          form.reset();
+        } else {
+          throw new Error(result.message || 'Błąd przetwarzania');
+        }
+      } catch (error) {
+        alert(error.message || 'Wystąpił błąd. Spróbuj ponownie.');
+      } finally {
+        submitBtn.disabled = false;
+        document.getElementById('loading').classList.add('hidden');
+      }
+    }
+
+    // Walidacja formularza
+    function validateForm() {
+      const form = document.getElementById('incidentForm');
+      const zdarzenie = form.zdarzenie.value;
+      
+      // Wymagane pola podstawowe
+      if (!form.miasto.value || !form.ulica.value || !form.katering.value || !zdarzenie) {
+        throw new Error('Wypełnij wszystkie wymagane pola');
+      }
+      
+      // Walidacja dla NIEDORECZENIE
+      if (zdarzenie === 'NIEDORECZENIE' && !form.opis.value) {
+        throw new Error('Opis jest wymagany dla zgłoszeń typu NIEDORECZENIE');
+      }
+      
+      // Walidacja plików
+      if (zdarzenie === 'USZKODZENIE PACZKI') {
+        const zdjecia = form.zdjecia_uszkodzenia.files;
+        if (zdjecia.length > 5) {
+          throw new Error('Można dodać maksymalnie 5 zdjęć uszkodzeń');
+        }
+        Array.from(zdjecia).forEach(file => {
+          if (file.size > MAX_IMAGE_SIZE) {
+            throw new Error(`Zdjęcie ${file.name} przekracza limit 10MB`);
+          }
+        });
+      }
+      
+      if (zdarzenie === 'NIEDORECZENIE') {
+        const zdjecia = form.zdjecia.files;
+        const filmy = form.filmy.files;
+        
+        if (zdjecia.length > 5) {
+          throw new Error('Można dodać maksymalnie 5 zdjęć');
+        }
+        if (filmy.length > 2) {
+          throw new Error('Można dodać maksymalnie 2 filmy');
+        }
+        
+        Array.from(zdjecia).forEach(file => {
+          if (file.size > MAX_IMAGE_SIZE) {
+            throw new Error(`Zdjęcie ${file.name} przekracza limit 10MB`);
+          }
+        });
+        
+        Array.from(filmy).forEach(file => {
+          if (file.size > MAX_VIDEO_SIZE) {
+            throw new Error(`Film ${file.name} przekracza limit 25MB`);
+          }
+        });
+      }
+    }
+
+    // Wyświetlenie komunikatu sukcesu
+    function showSuccess(reportId) {
+      document.getElementById('reportNumber').textContent = `#${reportId}`;
+      document.getElementById('successMessage').classList.remove('hidden');
+      
+      // Ukryj komunikat po 5 sekundach
+      setTimeout(() => {
+        document.getElementById('successMessage').classList.add('hidden');
+      }, 5000);
+    }
+  </script>
 </body>
 </html>
