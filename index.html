@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Zgłoszenie zdarzenia cateringowego</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    * { 
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Poppins', sans-serif;
+    }
+    body {
+      background-color: #f5f7fa;
+      padding: 20px;
+      color: #333;
+    }
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      overflow: hidden;
+    }
+    .header {
+      background: linear-gradient(135deg, #4361ee, #3a56d4);
+      color: white;
+      padding: 20px;
+      text-align: center;
+    }
+    .form-container {
+      padding: 25px;
+    }
+    .form-group {
+      margin-bottom: 20px;
+    }
+    label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 500;
+    }
+    input, select, textarea {
+      width: 100%;
+      padding: 12px;
+      border: 2px solid #e2e8f0;
+      border-radius: 8px;
+      font-size: 16px;
+      transition: all 0.3s;
+    }
+    input:focus, select:focus, textarea:focus {
+      outline: none;
+      border-color: #4895ef;
+      box-shadow: 0 0 0 3px rgba(72, 149, 239, 0.1);
+    }
+    select {
+      appearance: none;
+      background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+      background-repeat: no-repeat;
+      background-position: right 12px center;
+      background-size: 16px;
+    }
+    button {
+      background-color: #4361ee;
+      color: white;
+      border: none;
+      padding: 14px;
+      font-size: 16px;
+      font-weight: 500;
+      width: 100%;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.3s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+    button:hover {
+      background-color: #3a56d4;
+    }
+    button:disabled {
+      background-color: #cccccc;
+      cursor: not-allowed;
+    }
+    .hidden {
+      display: none;
+    }
+    .file-info {
+      font-size: 13px;
+      color: #666;
+      margin-top: 5px;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .dynamic-section {
+      margin-top: 25px;
+      padding-top: 25px;
+      border-top: 1px solid #eee;
+    }
+    .loading {
+      text-align: center;
+      padding: 20px;
+    }
+    .spinner {
+      width: 40px;
+      height: 40px;
+      border: 4px solid rgba(67, 97, 238, 0.1);
+      border-top-color: #4361ee;
+      border-radius: 50%;
+      margin: 0 auto 15px;
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    .toast {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      padding: 15px 20px;
+      border-radius: 8px;
+      color: white;
+      z-index: 1000;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      transform: translateY(100px);
+      opacity: 0;
+      transition: all 0.3s;
+    }
+    .toast.show {
+      transform: translateY(0);
+      opacity: 1;
+    }
+    .toast.success {
+      background-color: #4cc9f0;
+    }
+    .toast.error {
+      background-color: #f72585;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>Zgłoszenie zdarzenia cateringowego</h1>
+    </div>
+    
+    <div class="form-container">
+      <form id="incidentForm" enctype="multipart/form-data">
+        <div class="form-group">
+          <label for="miasto"><i class="fas fa-city"></i> Miasto</label>
+          <input type="text" id="miasto" name="miasto" list="listaMiast" required>
+          <datalist id="listaMiast"></datalist>
+        </div>
+        
+        <div class="form-group">
+          <label for="ulica"><i class="fas fa-road"></i> Ulica</label>
+          <input type="text" id="ulica" name="ulica" list="listaUlic" required>
+          <datalist id="listaUlic"></datalist>
+        </div>
+        
+        <div class="form-group">
+          <label for="numer"><i class="fas fa-home"></i> Nr domu/mieszkania</label>
+          <input type="text" id="numer" name="numer" required>
+        </div>
+        
+        <div class="form-group">
+          <label for="katering"><i class="fas fa-warehouse"></i> Wybierz catering</label>
+          <select id="katering" name="katering" required>
+            <option value="">Ładowanie listy cateringów...</option>
+          </select>
+        </div>
+        
+        <div class="form-group">
+          <label for="zdarzenie"><i class="fas fa-exclamation-circle"></i> Typ zdarzenia</label>
+          <select id="zdarzenie" name="zdarzenie" required>
+            <option value="">-- Wybierz typ zdarzenia --</option>
+            <option value="BRAK PACZKI">BRAK PACZKI</option>
+            <option value="DODATKOWA PACZKA">DODATKOWA PACZKA</option>
+            <option value="USZKODZENIE PACZKI">USZKODZENIE PACZKI</option>
+            <option value="NIEDORECZENIE">NIEDORECZENIE / BŁĘDNY ADRES</option>
+          </select>
+        </div>
+        
+        <div id="poleIlosc" class="dynamic-section hidden">
+          <div class="form-group">
+            <label for="ilosc"><i class="fas fa-boxes"></i> Ilość paczek</label>
+            <select id="ilosc" name="ilosc">
+              <option value="1">1</option>
+              <option value="2">2</option>
+              <option value="3">3</option>
+              <option value="4">4</option>
+              <option value="5">5</option>
+            </select>
+          </div>
+        </div>
+        
+        <div id="poleUszkodzenie" class="dynamic-section hidden">
+          <div class="form-group">
+            <label for="rodzaj_uszkodzenia"><i class="fas fa-tools"></i> Rodzaj uszkodzenia</label>
+            <select id="rodzaj_uszkodzenia" name="rodzaj_uszkodzenia">
+              <option value="ROZSZCZELNIONY POJEMNIK">ROZSZCZELNIONY POJEMNIK</option>
+              <option value="USZKODZONY POJEMNIK">USZKODZONY POJEMNIK</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="zdjecia_uszkodzenia"><i class="fas fa-camera"></i> Zdjęcia uszkodzeń (max 5)</label>
+            <input type="file" id="zdjecia_uszkodzenia" name="zdjecia_uszkodzenia" accept="image/*" multiple>
+            <div class="file-info">Maksymalny rozmiar: 10MB na zdjęcie</div>
+          </div>
+          <div class="form-group">
+            <label for="filmy_uszkodzenia"><i class="fas fa-video"></i> Filmy uszkodzeń (max 2)</label>
+            <input type="file" id="filmy_uszkodzenia" name="filmy_uszkodzenia" accept="video/*" multiple>
+            <div class="file-info">Maksymalny rozmiar: 25MB na film</div>
+          </div>
+        </div>
+        
+        <div id="poleOpisZdjecia" class="dynamic-section hidden">
+          <div class="form-group">
+            <label for="opis"><i class="fas fa-comment-alt"></i> Opis zdarzenia</label>
+            <textarea id="opis" name="opis" rows="4" required></textarea>
+          </div>
+          <div class="form-group">
+            <label for="zdjecia"><i class="fas fa-camera"></i> Zdjęcia (max 5)</label>
+            <input type="file" id="zdjecia" name="zdjecia" accept="image/*" multiple>
+            <div class="file-info">Maksymalny rozmiar: 10MB na zdjęcie</div>
+          </div>
+          <div class="form-group">
+            <label for="filmy"><i class="fas fa-video"></i> Filmy (max 2)</label>
+            <input type="file" id="filmy" name="filmy" accept="video/*" multiple>
+            <div class="file-info">Maksymalny rozmiar: 25MB na film</div>
+          </div>
+        </div>
+        
+        <div id="loading" class="loading hidden">
+          <div class="spinner"></div>
+          <p id="loadingText">Trwa przetwarzanie zgłoszenia...</p>
+        </div>
+        
+        <button type="submit" id="submitBtn">
+          <i class="fas fa-paper-plane"></i> Wyślij zgłoszenie
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
+  <script>
+    // Konfiguracja
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxZSt-MbO5tVsQDbuAEoUc9KbPCS5A3eciyeZB_RsuXDW4hRJ6Z6yHrMzuUZSGMpedIVg/exec";
+    const MAX_IMAGE_SIZE = 10 * 1024 * 1024; // 10MB
+    const MAX_VIDEO_SIZE = 25 * 1024 * 1024; // 25MB
+    
+    document.addEventListener('DOMContentLoaded', function() {
+      initApplication();
+    });
+
+    async function initApplication() {
+      try {
+        await loadSelectOptions();
+        setupEventListeners();
+      } catch (error) {
+        showToast('Błąd inicjalizacji aplikacji', 'error');
+        console.error('Init error:', error);
+      }
+    }
+
+    async function loadSelectOptions() {
+      try {
+        showLoading('Ładowanie danych...');
+        
+        // Tutaj możesz wczytać dane z pliku JSON lub API
+        const cateringList = [
+          "Catering A", "Catering B", "Catering C", "Catering D"
+        ];
+        
+        const miastaList = ["Warszawa", "Kraków", "Wrocław", "Poznań"];
+        const uliceList = ["Aleje Jerozolimskie", "Marszałkowska", "Krakowska", "Gdańska"];
+        
+        populateSelect('katering', cateringList, '-- Wybierz catering --');
+        populateDatalist('listaMiast', miastaList);
+        populateDatalist('listaUlic', uliceList);
+        
+        hideLoading();
+      } catch (error) {
+        hideLoading();
+        showToast('Błąd ładowania danych', 'error');
+        throw error;
+      }
+    }
+
+    function populateSelect(elementId, items, placeholder = '') {
+      const select = document.getElementById(elementId);
+      if (!select) return;
+      
+      select.innerHTML = items.length > 0
+        ? `<option value="">${placeholder}</option>${items.map(item => `
+          <option value="${item}">${item}</option>`).join('')}`
+        : `<option value="">Brak danych</option>`;
+    }
+
+    function populateDatalist(datalistId, items) {
+      const datalist = document.getElementById(datalistId);
+      if (datalist) {
+        datalist.innerHTML = items.map(item => `<option value="${item}">`).join('');
+      }
+    }
+
+    function setupEventListeners() {
+      document.getElementById('zdarzenie').addEventListener('change', function(e) {
+        toggleFormSections(e.target.value);
+      });
+
+      document.getElementById('incidentForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        await submitForm(this);
+      });
+    }
+
+    function toggleFormSections(selectedEvent) {
+      // Hide all sections
+      document.querySelectorAll('.dynamic-section').forEach(section => {
+        section.classList.add('hidden');
+      });
+
+      // Show relevant section
+      switch(selectedEvent) {
+        case 'BRAK PACZKI':
+        case 'DODATKOWA PACZKA':
+          document.getElementById('poleIlosc').classList.remove('hidden');
+          break;
+        case 'USZKODZENIE PACZKI':
+          document.getElementById('poleUszkodzenie').classList.remove('hidden');
+          break;
+        case 'NIEDORECZENIE':
+          document.getElementById('poleOpisZdjecia').classList.remove('hidden');
+          break;
+      }
+    }
+
+    async function submitForm(form) {
+      const submitBtn = document.getElementById('submitBtn');
+      submitBtn.disabled = true;
+      showLoading('Wysyłanie zgłoszenia...');
+
+      try {
+        validateForm(form);
+        validateFiles();
+        
+        const formData = new FormData(form);
+        const response = await fetch(SCRIPT_URL, {
+          method: 'POST',
+          body: formData
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const result = await response.json();
+        
+        if (result.success) {
+          showToast('Zgłoszenie zostało wysłane!', 'success');
+          form.reset();
+        } else {
+          throw new Error(result.message || 'Błąd podczas przetwarzania zgłoszenia');
+        }
+      } catch (error) {
+        console.error('Submit error:', error);
+        showToast(error.message || 'Wystąpił błąd podczas wysyłania', 'error');
+      } finally {
+        submitBtn.disabled = false;
+        hideLoading();
+      }
+    }
+
+    function validateForm(form) {
+      const requiredFields = ['miasto', 'ulica', 'katering', 'zdarzenie'];
+      const missingFields = [];
+      
+      requiredFields.forEach(field => {
+        if (!form[field].value.trim()) {
+          missingFields.push(field);
+        }
+      });
+      
+      if (missingFields.length > 0) {
+        throw new Error(`Wypełnij wymagane pola: ${missingFields.join(', ')}`);
+      }
+      
+      if (form.zdarzenie.value === 'NIEDORECZENIE' && !form.opis.value.trim()) {
+        form.opis.focus();
+        throw new Error('Opis jest wymagany dla zgłoszeń typu NIEDORECZENIE');
+      }
+    }
+
+    function validateFiles() {
+      const validateFileGroup = (inputId, maxSize, maxCount) => {
+        const input = document.getElementById(inputId);
+        if (!input) return;
+
+        const files = input.files;
+        if (files.length > maxCount) {
+          throw new Error(`Można dodać maksymalnie ${maxCount} plików`);
+        }
+
+        Array.from(files).forEach(file => {
+          if (file.size > maxSize) {
+            throw new Error(`Plik ${file.name} przekracza limit ${maxSize/1024/1024}MB`);
+          }
+        });
+      };
+
+      validateFileGroup('zdjecia_uszkodzenia', MAX_IMAGE_SIZE, 5);
+      validateFileGroup('filmy_uszkodzenia', MAX_VIDEO_SIZE, 2);
+      validateFileGroup('zdjecia', MAX_IMAGE_SIZE, 5);
+      validateFileGroup('filmy', MAX_VIDEO_SIZE, 2);
+    }
+
+    function showLoading(message) {
+      document.getElementById('loadingText').textContent = message;
+      document.getElementById('loading').classList.remove('hidden');
+    }
+
+    function hideLoading() {
+      document.getElementById('loading').classList.add('hidden');
+    }
+
+    function showToast(message, type = 'info') {
+      const toast = document.createElement('div');
+      toast.className = `toast ${type}`;
+      toast.textContent = message;
+      document.body.appendChild(toast);
+      
+      setTimeout(() => {
+        toast.classList.add('show');
+        setTimeout(() => {
+          toast.classList.remove('show');
+          setTimeout(() => toast.remove(), 300);
+        }, 5000);
+      }, 10);
+    }
+  </script>
+</body>
+</html>
