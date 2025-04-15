@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>System zgłoszeń cateringowych</title>
+  <title>System zgłoszeń cateringowych GS RZE</title>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
@@ -13,10 +13,12 @@
       --light: #f8f9fa;
       --dark: #212529;
       --gray: #6c757d;
-      --success: #4cc9f0;
-      --danger: #f72585;
+      --success: #28a745;
+      --warning: #ffc107;
+      --danger: #dc3545;
       --border-radius: 8px;
       --shadow-sm: 0 2px 8px rgba(0,0,0,0.1);
+      --transition: all 0.3s ease;
     }
 
     * {
@@ -30,6 +32,7 @@
       background-color: #f5f7fa;
       color: var(--dark);
       padding: 20px;
+      line-height: 1.6;
     }
 
     .container {
@@ -38,6 +41,7 @@
       background: white;
       border-radius: var(--border-radius);
       box-shadow: var(--shadow-sm);
+      overflow: hidden;
     }
 
     .header {
@@ -46,6 +50,10 @@
       padding: 20px;
       text-align: center;
       border-radius: var(--border-radius) var(--border-radius) 0 0;
+    }
+
+    .header h1 {
+      font-size: 1.5rem;
     }
 
     .form-container {
@@ -60,20 +68,33 @@
       display: block;
       margin-bottom: 8px;
       font-weight: 500;
+      color: var(--dark);
+    }
+
+    .required::after {
+      content: " *";
+      color: var(--danger);
     }
 
     input, select, textarea {
       width: 100%;
-      padding: 10px;
+      padding: 12px;
       border: 1px solid #ddd;
       border-radius: var(--border-radius);
       font-size: 16px;
+      transition: var(--transition);
+    }
+
+    input:focus, select:focus, textarea:focus {
+      border-color: var(--primary);
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.2);
     }
 
     select {
       appearance: none;
       background: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e") no-repeat;
-      background-position: right 10px center;
+      background-position: right 12px center;
       background-size: 16px;
     }
 
@@ -81,20 +102,30 @@
       background: var(--primary);
       color: white;
       border: none;
-      padding: 12px;
+      padding: 14px;
       width: 100%;
       border-radius: var(--border-radius);
       font-size: 16px;
+      font-weight: 500;
       cursor: pointer;
-      transition: background 0.2s;
+      transition: var(--transition);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
     }
 
     button:hover {
       background: var(--primary-dark);
     }
 
+    button:disabled {
+      background: var(--gray);
+      cursor: not-allowed;
+    }
+
     .hidden {
-      display: none;
+      display: none !important;
     }
 
     .file-info {
@@ -106,6 +137,7 @@
     .loading {
       text-align: center;
       padding: 20px;
+      color: var(--primary);
     }
 
     .spinner {
@@ -122,62 +154,126 @@
       to { transform: rotate(360deg); }
     }
 
-    .success-message {
-      background: white;
-      padding: 20px;
+    .alert {
+      padding: 15px;
+      margin-bottom: 20px;
       border-radius: var(--border-radius);
-      text-align: center;
-      margin-top: 20px;
-      border: 1px solid #ddd;
+      font-size: 14px;
+    }
+
+    .alert-success {
+      background-color: rgba(40, 167, 69, 0.1);
+      color: var(--success);
+      border: 1px solid rgba(40, 167, 69, 0.3);
+    }
+
+    .alert-danger {
+      background-color: rgba(220, 53, 69, 0.1);
+      color: var(--danger);
+      border: 1px solid rgba(220, 53, 69, 0.3);
+      margin-top: 10px;
+    }
+
+    .icon {
+      margin-right: 8px;
+    }
+
+    .form-section {
+      margin-bottom: 25px;
+      padding-bottom: 15px;
+      border-bottom: 1px solid #eee;
+    }
+
+    .form-section:last-child {
+      border-bottom: none;
+    }
+
+    .form-section-title {
+      font-size: 1.1rem;
+      color: var(--primary);
+      margin-bottom: 15px;
+      display: flex;
+      align-items: center;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 4px 8px;
+      font-size: 12px;
+      font-weight: 500;
+      border-radius: 20px;
+      background: var(--primary);
+      color: white;
+      margin-left: 8px;
+    }
+
+    #katering-loading {
+      font-size: 14px;
+      color: var(--gray);
+      font-style: italic;
     }
   </style>
 </head>
 <body>
   <div class="container">
     <div class="header">
-      <h1>Zgłoszenie zdarzenia</h1>
+      <h1><i class="fas fa-box-open"></i> Zgłoszenie zdarzenia</h1>
     </div>
     
     <div class="form-container">
       <form id="incidentForm" enctype="multipart/form-data">
-        <div class="form-group">
-          <label><i class="fas fa-city"></i> Miasto</label>
-          <input type="text" name="miasto" list="listaMiast" required>
-          <datalist id="listaMiast"></datalist>
-        </div>
-        
-        <div class="form-group">
-          <label><i class="fas fa-road"></i> Ulica</label>
-          <input type="text" name="ulica" list="listaUlic" required>
-          <datalist id="listaUlic"></datalist>
-        </div>
-        
-        <div class="form-group">
-          <label><i class="fas fa-home"></i> Nr domu/mieszkania</label>
-          <input type="text" name="numer" required>
-        </div>
-        
-        <div class="form-group">
-          <label><i class="fas fa-warehouse"></i> Wybierz catering</label>
-          <select name="katering" id="katering" required>
-            <option value="">Ładowanie listy...</option>
-          </select>
-        </div>
-        
-        <div class="form-group">
-          <label><i class="fas fa-exclamation-circle"></i> Typ zdarzenia</label>
-          <select name="zdarzenie" id="zdarzenie" required>
-            <option value="">-- Wybierz --</option>
-            <option value="BRAK PACZKI">BRAK PACZKI</option>
-            <option value="DODATKOWA PACZKA">DODATKOWA PACZKA</option>
-            <option value="USZKODZENIE PACZKI">USZKODZENIE PACZKI</option>
-            <option value="NIEDORECZENIE">NIEDORECZENIE / BŁĘDNY ADRES</option>
-          </select>
-        </div>
-        
-        <div id="poleIlosc" class="hidden">
+        <div class="form-section">
+          <div class="form-section-title">
+            <i class="fas fa-map-marker-alt"></i> Lokalizacja
+          </div>
+          
           <div class="form-group">
-            <label><i class="fas fa-boxes"></i> Ilość paczek</label>
+            <label class="required" for="miasto"><i class="fas fa-city icon"></i>Miasto</label>
+            <input type="text" id="miasto" name="miasto" required>
+          </div>
+          
+          <div class="form-group">
+            <label class="required" for="ulica"><i class="fas fa-road icon"></i>Ulica</label>
+            <input type="text" id="ulica" name="ulica" required>
+          </div>
+          
+          <div class="form-group">
+            <label class="required" for="numer"><i class="fas fa-home icon"></i>Nr domu/mieszkania</label>
+            <input type="text" id="numer" name="numer" required>
+          </div>
+        </div>
+
+        <div class="form-section">
+          <div class="form-section-title">
+            <i class="fas fa-info-circle"></i> Szczegóły zgłoszenia
+          </div>
+          
+          <div class="form-group">
+            <label class="required" for="katering"><i class="fas fa-utensils icon"></i>Wybierz catering</label>
+            <select id="katering" name="katering" required>
+              <option value="">Ładowanie listy kateringów...</option>
+            </select>
+            <div id="katering-loading">Trwa wczytywanie...</div>
+          </div>
+          
+          <div class="form-group">
+            <label class="required" for="zdarzenie"><i class="fas fa-exclamation-circle icon"></i>Typ zdarzenia</label>
+            <select id="zdarzenie" name="zdarzenie" required>
+              <option value="">-- Wybierz --</option>
+              <option value="BRAK PACZKI">BRAK PACZKI</option>
+              <option value="DODATKOWA PACZKA">DODATKOWA PACZKA</option>
+              <option value="USZKODZENIE PACZKI">USZKODZENIE PACZKI</option>
+              <option value="NIEDORECZENIE">NIEDORECZENIE / BŁĘDNY ADRES</option>
+            </select>
+          </div>
+        </div>
+
+        <div id="poleIlosc" class="hidden form-section">
+          <div class="form-section-title">
+            <i class="fas fa-boxes"></i> Ilość paczek
+          </div>
+          <div class="form-group">
+            <label for="ilosc"><i class="fas fa-cube icon"></i>Ilość</label>
             <select name="ilosc">
               <option value="1">1</option>
               <option value="2">2</option>
@@ -188,35 +284,41 @@
           </div>
         </div>
         
-        <div id="poleUszkodzenie" class="hidden">
+        <div id="poleUszkodzenie" class="hidden form-section">
+          <div class="form-section-title">
+            <i class="fas fa-tools"></i> Uszkodzenie paczki
+          </div>
           <div class="form-group">
-            <label><i class="fas fa-tools"></i> Rodzaj uszkodzenia</label>
+            <label for="rodzaj_uszkodzenia"><i class="fas fa-bolt icon"></i>Rodzaj uszkodzenia</label>
             <select name="rodzaj_uszkodzenia">
               <option value="ROZSZCZELNIONY POJEMNIK">ROZSZCZELNIONY POJEMNIK</option>
               <option value="USZKODZONY POJEMNIK">USZKODZONY POJEMNIK</option>
             </select>
           </div>
           <div class="form-group">
-            <label><i class="fas fa-camera"></i> Zdjęcia uszkodzeń (max 5)</label>
+            <label for="zdjecia_uszkodzenia"><i class="fas fa-camera icon"></i>Zdjęcia uszkodzeń</label>
             <input type="file" name="zdjecia_uszkodzenia" accept="image/*" multiple>
-            <div class="file-info">Maksymalny rozmiar: 10MB na zdjęcie</div>
+            <div class="file-info">Maksymalnie 5 zdjęć (10MB każde)</div>
           </div>
         </div>
         
-        <div id="poleOpisZdjecia" class="hidden">
-          <div class="form-group">
-            <label><i class="fas fa-comment-alt"></i> Opis zdarzenia</label>
-            <textarea name="opis" rows="4" required></textarea>
+        <div id="poleOpisZdjecia" class="hidden form-section">
+          <div class="form-section-title">
+            <i class="fas fa-comment-dots"></i> Dodatkowe informacje
           </div>
           <div class="form-group">
-            <label><i class="fas fa-camera"></i> Zdjęcia (max 5)</label>
+            <label id="opisLabel" for="opis"><i class="fas fa-align-left icon"></i>Opis zdarzenia</label>
+            <textarea name="opis" id="opis" rows="4"></textarea>
+          </div>
+          <div class="form-group">
+            <label for="zdjecia"><i class="fas fa-camera icon"></i>Zdjęcia</label>
             <input type="file" name="zdjecia" accept="image/*" multiple>
-            <div class="file-info">Maksymalny rozmiar: 10MB na zdjęcie</div>
+            <div class="file-info">Maksymalnie 5 zdjęć (10MB każde)</div>
           </div>
           <div class="form-group">
-            <label><i class="fas fa-video"></i> Filmy (max 2)</label>
+            <label for="filmy"><i class="fas fa-video icon"></i>Filmy</label>
             <input type="file" name="filmy" accept="video/*" multiple>
-            <div class="file-info">Maksymalny rozmiar: 25MB na film</div>
+            <div class="file-info">Maksymalnie 2 filmy (25MB każdy)</div>
           </div>
         </div>
         
@@ -225,23 +327,28 @@
           <p>Trwa wysyłanie zgłoszenia...</p>
         </div>
         
+        <div id="errorMessage" class="alert alert-danger hidden"></div>
+        
         <button type="submit" id="submitBtn">
           <i class="fas fa-paper-plane"></i> Wyślij zgłoszenie
         </button>
       </form>
       
-      <div id="successMessage" class="success-message hidden">
-        <h3><i class="fas fa-check-circle" style="color: var(--success);"></i> Zgłoszenie wysłane!</h3>
+      <div id="successMessage" class="alert alert-success hidden">
+        <h3><i class="fas fa-check-circle"></i> Zgłoszenie wysłane!</h3>
         <p>Numer zgłoszenia: <strong id="reportNumber"></strong></p>
+        <p>Możesz zamknąć tę stronę lub wysłać kolejne zgłoszenie.</p>
       </div>
     </div>
   </div>
 
   <script>
     // Konfiguracja
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz6awtTjogbLjoY2r3Tv7KScsVzd3h5vfKzi9OLKQ52QBVcNC9UXctrTEim3i_dcIp3/exec";
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxab0DYxUTPQVcoL3Qltcu0I28g2JQ6YVJV0uRsOWVQ5oywdtPM58_9KlEfu_OyC35owg/exec";
     const MAX_IMAGE_SIZE = 10 * 1024 * 1024; // 10MB
     const MAX_VIDEO_SIZE = 25 * 1024 * 1024; // 25MB
+    const MAX_IMAGES = 5;
+    const MAX_VIDEOS = 2;
     
     // Inicjalizacja
     document.addEventListener('DOMContentLoaded', async () => {
@@ -249,29 +356,58 @@
       setupEventListeners();
     });
 
-    // Ładowanie listy cateringów
+    // Ładowanie listy cateringów z pliku JSON
     async function loadCateringList() {
+      const kateringSelect = document.getElementById('katering');
+      const loadingInfo = document.getElementById('katering-loading');
+      
       try {
         const response = await fetch('cateringlist.json');
-        const data = await response.json();
-        const select = document.getElementById('katering');
         
-        select.innerHTML = '<option value="">-- Wybierz catering --</option>' +
-          data.caterings.map(c => `<option value="${c}">${c}</option>`).join('');
+        if (!response.ok) {
+          throw new Error('Nie udało się załadować listy kateringów');
+        }
+        
+        const data = await response.json();
+        
+        if (!data.caterings || !Array.isArray(data.caterings)) {
+          throw new Error('Nieprawidłowy format pliku z kateringami');
+        }
+        
+        // Wyczyść i wypełnij select
+        kateringSelect.innerHTML = '<option value="">-- Wybierz catering --</option>';
+        
+        data.caterings.forEach(catering => {
+          const option = document.createElement('option');
+          option.value = catering;
+          option.textContent = catering;
+          kateringSelect.appendChild(option);
+        });
+        
+        loadingInfo.textContent = `Załadowano ${data.caterings.length} kateringów`;
+        
+        // Ukryj komunikat ładowania po 3 sekundach
+        setTimeout(() => {
+          loadingInfo.style.display = 'none';
+        }, 3000);
+        
       } catch (error) {
-        console.error('Błąd ładowania listy cateringów:', error);
-        document.getElementById('katering').innerHTML = 
-          '<option value="">Błąd ładowania listy</option>';
+        console.error('Błąd ładowania listy kateringów:', error);
+        kateringSelect.innerHTML = '<option value="">Błąd ładowania listy</option>';
+        loadingInfo.textContent = 'Błąd ładowania listy kateringów';
+        loadingInfo.style.color = 'var(--danger)';
       }
     }
 
     // Obsługa zdarzeń
     function setupEventListeners() {
-      document.getElementById('zdarzenie').addEventListener('change', function() {
+      const zdarzenieSelect = document.getElementById('zdarzenie');
+      zdarzenieSelect.addEventListener('change', function() {
         toggleFormSections(this.value);
       });
 
-      document.getElementById('incidentForm').addEventListener('submit', async function(e) {
+      const form = document.getElementById('incidentForm');
+      form.addEventListener('submit', async function(e) {
         e.preventDefault();
         await submitForm(this);
       });
@@ -279,10 +415,18 @@
 
     // Przełączanie sekcji formularza
     function toggleFormSections(selectedEvent) {
+      // Ukryj wszystkie sekcje dodatkowe
       document.getElementById('poleIlosc').classList.add('hidden');
       document.getElementById('poleUszkodzenie').classList.add('hidden');
       document.getElementById('poleOpisZdjecia').classList.add('hidden');
+      
+      // Ustaw pole opisu jako niewymagane domyślnie
+      const opisField = document.getElementById('opis');
+      const opisLabel = document.getElementById('opisLabel');
+      opisField.required = false;
+      opisLabel.classList.remove('required');
 
+      // Pokaż odpowiednie sekcje w zależności od wybranego zdarzenia
       switch(selectedEvent) {
         case 'BRAK PACZKI':
         case 'DODATKOWA PACZKA':
@@ -293,6 +437,9 @@
           break;
         case 'NIEDORECZENIE':
           document.getElementById('poleOpisZdjecia').classList.remove('hidden');
+          // Ustaw pole opisu jako wymagane tylko dla NIEDORECZENIA
+          opisField.required = true;
+          opisLabel.classList.add('required');
           break;
       }
     }
@@ -300,19 +447,29 @@
     // Wysyłanie formularza
     async function submitForm(form) {
       const submitBtn = document.getElementById('submitBtn');
+      const loading = document.getElementById('loading');
+      const errorDiv = document.getElementById('errorMessage');
+      
       submitBtn.disabled = true;
-      document.getElementById('loading').classList.remove('hidden');
+      loading.classList.remove('hidden');
+      errorDiv.classList.add('hidden');
       
       try {
-        validateForm();
+        // Walidacja formularza
+        validateForm(form);
         
+        // Przygotuj dane formularza
         const formData = new FormData(form);
+        
+        // Wyślij żądanie
         const response = await fetch(SCRIPT_URL, {
           method: 'POST',
           body: formData
         });
 
-        if (!response.ok) throw new Error('Błąd połączenia');
+        if (!response.ok) {
+          throw new Error('Błąd połączenia z serwerem');
+        }
         
         const result = await response.json();
         
@@ -320,64 +477,72 @@
           showSuccess(result.reportId);
           form.reset();
         } else {
-          throw new Error(result.message || 'Błąd przetwarzania');
+          throw new Error(result.message || 'Wystąpił błąd podczas przetwarzania zgłoszenia');
         }
       } catch (error) {
-        alert(error.message || 'Wystąpił błąd. Spróbuj ponownie.');
+        errorDiv.textContent = error.message;
+        errorDiv.classList.remove('hidden');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
       } finally {
         submitBtn.disabled = false;
-        document.getElementById('loading').classList.add('hidden');
+        loading.classList.add('hidden');
       }
     }
 
     // Walidacja formularza
-    function validateForm() {
-      const form = document.getElementById('incidentForm');
+    function validateForm(form) {
       const zdarzenie = form.zdarzenie.value;
       
-      // Wymagane pola podstawowe
-      if (!form.miasto.value || !form.ulica.value || !form.katering.value || !zdarzenie) {
-        throw new Error('Wypełnij wszystkie wymagane pola');
+      // Sprawdź wymagane pola podstawowe
+      const requiredFields = ['miasto', 'ulica', 'numer', 'katering', 'zdarzenie'];
+      const missingFields = requiredFields.filter(field => !form[field].value.trim());
+      
+      if (missingFields.length > 0) {
+        throw new Error('Wypełnij wszystkie wymagane pola oznaczone *');
       }
       
-      // Walidacja dla NIEDORECZENIE
-      if (zdarzenie === 'NIEDORECZENIE' && !form.opis.value) {
-        throw new Error('Opis jest wymagany dla zgłoszeń typu NIEDORECZENIE');
+      // Specjalna walidacja dla NIEDORECZENIE
+      if (zdarzenie === 'NIEDORECZENIE' && !form.opis.value.trim()) {
+        throw new Error('Opis zdarzenia jest wymagany dla zgłoszeń typu NIEDORECZENIE');
       }
       
-      // Walidacja plików
+      // Walidacja plików dla USZKODZENIE PACZKI
       if (zdarzenie === 'USZKODZENIE PACZKI') {
         const zdjecia = form.zdjecia_uszkodzenia.files;
-        if (zdjecia.length > 5) {
-          throw new Error('Można dodać maksymalnie 5 zdjęć uszkodzeń');
+        
+        if (zdjecia.length > MAX_IMAGES) {
+          throw new Error(`Można dodać maksymalnie ${MAX_IMAGES} zdjęć uszkodzeń`);
         }
+        
         Array.from(zdjecia).forEach(file => {
           if (file.size > MAX_IMAGE_SIZE) {
-            throw new Error(`Zdjęcie ${file.name} przekracza limit 10MB`);
+            throw new Error(`Zdjęcie "${file.name}" przekracza limit ${MAX_IMAGE_SIZE/1024/1024}MB`);
           }
         });
       }
       
+      // Walidacja plików dla NIEDORECZENIE
       if (zdarzenie === 'NIEDORECZENIE') {
         const zdjecia = form.zdjecia.files;
         const filmy = form.filmy.files;
         
-        if (zdjecia.length > 5) {
-          throw new Error('Można dodać maksymalnie 5 zdjęć');
+        if (zdjecia.length > MAX_IMAGES) {
+          throw new Error(`Można dodać maksymalnie ${MAX_IMAGES} zdjęć`);
         }
-        if (filmy.length > 2) {
-          throw new Error('Można dodać maksymalnie 2 filmy');
+        
+        if (filmy.length > MAX_VIDEOS) {
+          throw new Error(`Można dodać maksymalnie ${MAX_VIDEOS} filmów`);
         }
         
         Array.from(zdjecia).forEach(file => {
           if (file.size > MAX_IMAGE_SIZE) {
-            throw new Error(`Zdjęcie ${file.name} przekracza limit 10MB`);
+            throw new Error(`Zdjęcie "${file.name}" przekracza limit ${MAX_IMAGE_SIZE/1024/1024}MB`);
           }
         });
         
         Array.from(filmy).forEach(file => {
           if (file.size > MAX_VIDEO_SIZE) {
-            throw new Error(`Film ${file.name} przekracza limit 25MB`);
+            throw new Error(`Film "${file.name}" przekracza limit ${MAX_VIDEO_SIZE/1024/1024}MB`);
           }
         });
       }
@@ -385,13 +550,19 @@
 
     // Wyświetlenie komunikatu sukcesu
     function showSuccess(reportId) {
-      document.getElementById('reportNumber').textContent = `#${reportId}`;
-      document.getElementById('successMessage').classList.remove('hidden');
+      const successDiv = document.getElementById('successMessage');
+      const form = document.getElementById('incidentForm');
       
-      // Ukryj komunikat po 5 sekundach
+      document.getElementById('reportNumber').textContent = `#${reportId}`;
+      form.classList.add('hidden');
+      successDiv.classList.remove('hidden');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      
+      // Ukryj komunikat po 10 sekundach
       setTimeout(() => {
-        document.getElementById('successMessage').classList.add('hidden');
-      }, 5000);
+        successDiv.classList.add('hidden');
+        form.classList.remove('hidden');
+      }, 10000);
     }
   </script>
 </body>
