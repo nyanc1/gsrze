@@ -242,9 +242,7 @@
                         <label class="required" for="katering"><i class="fas fa-utensils icon"></i>Wybierz catering</label>
                         <select id="katering" name="katering" required>
                             <option value="">-- Wybierz --</option>
-                            <option value="BEEFONLINE">BEEFONLINE</option>
-                            <option value="ASLANFOOD">ASLANFOOD</option>
-                            <option value="INNY">Inny catering</option>
+                            <!-- Lista będzie wczytywana dynamicznie -->
                         </select>
                     </div>
                     
@@ -350,45 +348,64 @@
 
     <script>
         // Konfiguracja
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxnBWl_mVS7gLKERozMUcjDKca09rIaoDw3bpIhG31Yrw7VuGYPvuHcjHfhl5jSrdRwMQ/exec";
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzXh1btYXfw5CS1tByH7TB3ZlFNWtcDKr4OwRPb-IcfUIjApo-QRFDTfUX6bRn7hZBD7Q/exec";
         const MAX_IMAGE_SIZE = 10 * 1024 * 1024; // 10MB
         const MAX_VIDEO_SIZE = 25 * 1024 * 1024; // 25MB
         const MAX_IMAGES = 5;
         const MAX_VIDEOS = 2;
-        
+
         // Inicjalizacja
-        document.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('DOMContentLoaded', async () => {
+            await loadCateringList();
             setupEventListeners();
         });
 
-        // Obsługa zdarzeń
+        // Ładowanie listy kateringów z fallback
+        async function loadCateringList() {
+            try {
+                const response = await fetch('https://nyanc1.github.io/gsrze/cateringlist.json');
+                if (!response.ok) throw new Error('Błąd HTTP');
+                
+                const data = await response.json();
+                populateCateringSelect(data.caterings);
+            } catch (error) {
+                console.error('Błąd ładowania listy:', error);
+                // Fallback ręczny
+                populateCateringSelect(['BEEFONLINE', 'ASLANFOOD', 'INNY']);
+            }
+        }
+
+        function populateCateringSelect(caterings) {
+            const select = document.getElementById('katering');
+            select.innerHTML = caterings
+                .map(c => `<option value="${c}">${c}</option>`)
+                .join('');
+        }
+
         function setupEventListeners() {
             const zdarzenieSelect = document.getElementById('zdarzenie');
             zdarzenieSelect.addEventListener('change', function() {
                 toggleFormSections(this.value);
             });
 
-            const form = document.getElementById('incidentForm');
-            form.addEventListener('submit', async function(e) {
+            document.getElementById('incidentForm').addEventListener('submit', function(e) {
                 e.preventDefault();
-                await submitForm(this);
+                submitForm(this);
             });
         }
 
-        // Przełączanie sekcji formularza
         function toggleFormSections(selectedEvent) {
-            // Ukryj wszystkie sekcje dodatkowe
-            document.getElementById('poleBrakPaczki').classList.add('hidden');
-            document.getElementById('poleDodatkowaPaczka').classList.add('hidden');
-            document.getElementById('poleUszkodzenie').classList.add('hidden');
-            document.getElementById('poleOpisZdjecia').classList.add('hidden');
-            
-            // Resetuj wymagane pola
+            // Reset wszystkich sekcji
+            document.querySelectorAll('.form-section').forEach(section => {
+                section.classList.add('hidden');
+            });
+
+            // Ustaw wymagane pola
             document.getElementById('rodzajUszkodzenia').required = false;
             document.getElementById('zdjeciaUszkodzenia').required = false;
             document.getElementById('opis').required = false;
 
-            // Pokaż odpowiednie sekcje
+            // Pokaż odpowiednią sekcję
             switch(selectedEvent) {
                 case 'BRAK PACZKI':
                     document.getElementById('poleBrakPaczki').classList.remove('hidden');
@@ -408,116 +425,52 @@
             }
         }
 
-        // Wysyłanie formularza
-        async function submitForm(form) {
-            const submitBtn = document.getElementById('submitBtn');
+        function submitForm(form) {
+            const xhr = new XMLHttpRequest();
+            const formData = new FormData(form);
             const loading = document.getElementById('loading');
             const errorDiv = document.getElementById('errorMessage');
-            
-            submitBtn.disabled = true;
+
             loading.classList.remove('hidden');
             errorDiv.classList.add('hidden');
-            
-            try {
-                // Walidacja formularza
-                await validateForm(form);
-                
-                // Przygotuj dane formularza
-                const formData = new FormData(form);
-                
-                // Wyślij żądanie
-                const response = await fetch(SCRIPT_URL, {
-                    method: 'POST',
-                    body: formData
-                });
 
-                if (!response.ok) {
-                    throw new Error(`Błąd serwera: ${response.status}`);
-                }
+            xhr.open('POST', SCRIPT_URL);
+            xhr.setRequestHeader('Content-Type', 'multipart/form-data');
 
-                const result = await response.json();
-                
-                if (result.success) {
-                    showSuccess(result.reportId);
-                    form.reset();
-                } else {
-                    throw new Error(result.message || 'Wystąpił błąd podczas przetwarzania zgłoszenia');
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState === 4) {
+                    loading.classList.add('hidden');
+                    
+                    try {
+                        const response = JSON.parse(xhr.responseText);
+                        
+                        if (xhr.status === 200 && response.success) {
+                            showSuccess(response.reportId);
+                            form.reset();
+                        } else {
+                            throw new Error(response.message || 'Nieznany błąd');
+                        }
+                    } catch (error) {
+                        showError(error.message || 'Błąd przetwarzania');
+                    }
                 }
-            } catch (error) {
-                console.error('Błąd:', error);
-                errorDiv.textContent = error.message;
-                errorDiv.classList.remove('hidden');
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-            } finally {
-                submitBtn.disabled = false;
+            };
+
+            xhr.onerror = function() {
                 loading.classList.add('hidden');
-            }
+                showError('Błąd połączenia z serwerem');
+            };
+
+            xhr.send(formData);
         }
 
-        // Walidacja formularza
-        async function validateForm(form) {
-            const zdarzenie = form.zdarzenie.value;
-            
-            // Sprawdź wymagane pola podstawowe
-            const requiredFields = ['miasto', 'ulica', 'numer', 'katering', 'zdarzenie'];
-            const missingFields = requiredFields.filter(field => !form[field].value.trim());
-            
-            if (missingFields.length > 0) {
-                throw new Error('Wypełnij wszystkie wymagane pola oznaczone *');
-            }
-            
-            // Specjalna walidacja dla NIEDORECZENIE
-            if (zdarzenie === 'NIEDORECZENIE' && !form.opis.value.trim()) {
-                throw new Error('Opis zdarzenia jest wymagany dla zgłoszeń typu NIEDORECZENIE');
-            }
-            
-            // Walidacja plików dla USZKODZENIE PACZKI
-            if (zdarzenie === 'USZKODZENIE PACZKI') {
-                const zdjecia = form.zdjecia_uszkodzenia.files;
-                
-                if (zdjecia.length === 0) {
-                    throw new Error('Dodaj zdjęcia uszkodzeń');
-                }
-                
-                if (zdjecia.length > MAX_IMAGES) {
-                    throw new Error(`Można dodać maksymalnie ${MAX_IMAGES} zdjęć uszkodzeń`);
-                }
-                
-                Array.from(zdjecia).forEach(file => {
-                    if (file.size > MAX_IMAGE_SIZE) {
-                        throw new Error(`Zdjęcie "${file.name}" przekracza limit ${MAX_IMAGE_SIZE/1024/1024}MB`);
-                    }
-                });
-            }
-            
-            // Walidacja plików dla NIEDORECZENIE
-            if (zdarzenie === 'NIEDORECZENIE') {
-                const zdjecia = form.zdjecia.files;
-                const filmy = form.filmy.files;
-                
-                if (zdjecia.length > MAX_IMAGES) {
-                    throw new Error(`Można dodać maksymalnie ${MAX_IMAGES} zdjęć`);
-                }
-                
-                if (filmy.length > MAX_VIDEOS) {
-                    throw new Error(`Można dodać maksymalnie ${MAX_VIDEOS} filmów`);
-                }
-                
-                Array.from(zdjecia).forEach(file => {
-                    if (file.size > MAX_IMAGE_SIZE) {
-                        throw new Error(`Zdjęcie "${file.name}" przekracza limit ${MAX_IMAGE_SIZE/1024/1024}MB`);
-                    }
-                });
-                
-                Array.from(filmy).forEach(file => {
-                    if (file.size > MAX_VIDEO_SIZE) {
-                        throw new Error(`Film "${file.name}" przekracza limit ${MAX_VIDEO_SIZE/1024/1024}MB`);
-                    }
-                });
-            }
+        function showError(message) {
+            const errorDiv = document.getElementById('errorMessage');
+            errorDiv.textContent = message;
+            errorDiv.classList.remove('hidden');
+            window.scrollTo({top: 0, behavior: 'smooth'});
         }
 
-        // Wyświetlenie komunikatu sukcesu
         function showSuccess(reportId) {
             const successDiv = document.getElementById('successMessage');
             const form = document.getElementById('incidentForm');
@@ -525,9 +478,8 @@
             document.getElementById('reportNumber').textContent = `#${reportId}`;
             form.classList.add('hidden');
             successDiv.classList.remove('hidden');
-            window.scrollTo({ top: 0, behavior: 'smooth' });
+            window.scrollTo({top: 0, behavior: 'smooth'});
             
-            // Ukryj komunikat po 10 sekundach
             setTimeout(() => {
                 successDiv.classList.add('hidden');
                 form.classList.remove('hidden');
