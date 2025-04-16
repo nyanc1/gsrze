@@ -245,7 +245,7 @@
 
   <script>
     // Konfiguracja
-    const API_ENDPOINT = 'https://script.google.com/macros/s/AKfycbyoUpDs6_qJb-3fFmGjx_WttJH496ipsz6uQCt79IuymKlMqpC87sA6Me8JJGSk7YmMdA/exec';
+    const API_ENDPOINT = 'https://script.google.com/macros/s/AKfycbzMFpTTc-ov6BGIOm5uFcSxy_Mnn47XjiNHDKiKXvayOB4sH40hTj9wFSky30NaelPU/exec';
     const MAX_CHUNK_SIZE = 512 * 1024; // 512KB na fragment
     const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB maksymalny rozmiar pliku
 
@@ -396,7 +396,7 @@
       return chunks;
     }
 
-    // Funkcja do przesyłania pliku po kawałkach
+    // Funkcja do przesyłania pliku po kawałkach z obsługą CORS
     async function uploadFileInChunks(file, folderName, fieldName, onProgress) {
       if (file.size > MAX_FILE_SIZE) {
         throw new Error(`Plik ${file.name} jest za duży (maksymalnie ${MAX_FILE_SIZE / (1024 * 1024)}MB)`);
@@ -414,7 +414,8 @@
           size: file.size,
           folderName: folderName,
           fieldName: fieldName
-        })
+        }),
+        mode: 'cors'
       });
       
       const sessionData = await sessionResponse.json();
@@ -451,7 +452,8 @@
             chunkIndex: i,
             totalChunks: chunks.length,
             data: chunkData
-          })
+          }),
+          mode: 'cors'
         });
         
         const chunkResult = await chunkResponse.json();
@@ -473,7 +475,8 @@
         },
         body: JSON.stringify({
           sessionId: sessionId
-        })
+        }),
+        mode: 'cors'
       });
       
       const finalizeResult = await finalizeResponse.json();
@@ -508,7 +511,10 @@
         // Dodaj typ zdarzenia do danych
         formDataObj.zdarzenie_typ = formDataObj.zdarzenie;
         
-        // Zainicjalizuj zgłoszenie
+        // Zainicjalizuj zgłoszenie z obsługą CORS
+        progressText.textContent = 'Inicjalizacja zgłoszenia...';
+        progressBar.style.width = '5%';
+        
         const initResponse = await fetch(`${API_ENDPOINT}?action=initializeReport`, {
           method: 'POST',
           headers: {
@@ -517,7 +523,8 @@
           body: JSON.stringify({
             folderName: folderName,
             formData: formDataObj
-          })
+          }),
+          mode: 'cors'
         });
         
         const initResult = await initResponse.json();
@@ -527,6 +534,7 @@
         }
         
         const reportId = initResult.reportId;
+        progressBar.style.width = '10%';
         
         // Przesyłanie plików dla uszkodzeń
         const fileUrlsUszkodzenia = [];
@@ -542,14 +550,13 @@
               folderName, 
               'zdjecia_uszkodzen',
               (progress) => {
-                progressBar.style.width = `${progress}%`;
+                progressBar.style.width = `${10 + (progress * 0.8 / files.length) + (i * 80 / files.length)}%`;
                 progressText.textContent = `Przesyłanie zdjęcia ${i+1} z ${files.length}: ${progress}%`;
               }
             );
             
             fileUrlsUszkodzenia.push(fileUrl);
             totalProgress = Math.round(((i + 1) / files.length) * 100);
-            progressBar.style.width = `${totalProgress}%`;
           }
         }
         
@@ -558,9 +565,6 @@
         if (formDataObj.zdarzenie === 'NIEDORECZENIE / BŁĘDNY ADRES') {
           const files = document.getElementById('zdjecia_filmu').files;
           if (files.length > 0) {
-            progressText.textContent = 'Przesyłanie zdjęć/filmów';
-            progressBar.style.width = '0%';
-            
             for (let i = 0; i < files.length; i++) {
               progressText.textContent = `Przesyłanie pliku ${i+1} z ${files.length}`;
               
@@ -569,7 +573,7 @@
                 folderName, 
                 'zdjecia_filmu',
                 (progress) => {
-                  progressBar.style.width = `${progress}%`;
+                  progressBar.style.width = `${10 + (progress * 0.8 / files.length) + (i * 80 / files.length)}%`;
                   progressText.textContent = `Przesyłanie pliku ${i+1} z ${files.length}: ${progress}%`;
                 }
               );
@@ -592,7 +596,8 @@
             reportId: reportId,
             fileUrlsUszkodzenia: fileUrlsUszkodzenia,
             fileUrlsFilmy: fileUrlsFilmy
-          })
+          }),
+          mode: 'cors'
         });
         
         const finalizeReportResult = await finalizeReportResponse.json();
