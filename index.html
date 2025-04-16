@@ -53,6 +53,10 @@
     button:hover {
       background-color: #218838;
     }
+    button:disabled {
+      background-color: #6c757d;
+      cursor: not-allowed;
+    }
     .hidden { display: none; }
     .loading {
       text-align: center;
@@ -72,10 +76,90 @@
       text-align: center;
       margin-bottom: 1rem;
     }
+    .file-list {
+      margin-top: 0.5rem;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      padding: 0.5rem;
+      max-height: 150px;
+      overflow-y: auto;
+    }
+    .file-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.25rem 0;
+      border-bottom: 1px solid #eee;
+    }
+    .file-item:last-child {
+      border-bottom: none;
+    }
+    .file-remove {
+      color: #dc3545;
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 0.25rem 0.5rem;
+      margin: 0;
+      width: auto;
+    }
+    .progress-container {
+      width: 100%;
+      background-color: #e9ecef;
+      border-radius: 4px;
+      margin-top: 1rem;
+    }
+    .progress-bar {
+      height: 10px;
+      background-color: #28a745;
+      border-radius: 4px;
+      width: 0%;
+      transition: width 0.3s;
+    }
+    .progress-text {
+      text-align: center;
+      font-size: 0.875rem;
+      margin-top: 0.25rem;
+    }
+    .preview-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 10px;
+    }
+    .preview-item {
+      position: relative;
+      width: 80px;
+      height: 80px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+    .preview-item img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .preview-remove {
+      position: absolute;
+      top: 2px;
+      right: 2px;
+      background: rgba(255, 255, 255, 0.8);
+      border-radius: 50%;
+      width: 20px;
+      height: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 14px;
+      line-height: 1;
+      padding: 0;
+    }
   </style>
 </head>
 <body>
-  <form id="incidentForm" enctype="multipart/form-data">
+  <form id="incidentForm">
     <h2>Zgłoszenie zdarzenia</h2>
     <div id="successMessage" class="success hidden">Zgłoszenie zostało wysłane pomyślnie!</div>
 
@@ -128,18 +212,29 @@
           <option value="USZKODZONY POJEMNIK">USZKODZONY POJEMNIK</option>
         </select>
       </label>
-      <label>Zdjęcia uszkodzeń (wymagane)
+      <label>
+        Zdjęcia uszkodzeń (wymagane)
         <input type="file" name="zdjecia_uszkodzen" id="zdjecia_uszkodzen" accept="image/*" multiple>
       </label>
+      <div id="previewUszkodzenia" class="preview-container"></div>
+      <div id="fileListUszkodzenia" class="file-list hidden"></div>
     </div>
 
     <div id="poleOpisZdjecia" class="hidden">
       <label>Opis zdarzenia
         <textarea name="opis" id="opis" rows="4"></textarea>
       </label>
-      <label>Zdjęcia / Film
+      <label>
+        Zdjęcia / Film
         <input type="file" name="zdjecia_filmu" id="zdjecia_filmu" accept="image/*,video/*" multiple>
       </label>
+      <div id="previewZdjeciaFilmu" class="preview-container"></div>
+      <div id="fileListZdjeciaFilmu" class="file-list hidden"></div>
+    </div>
+
+    <div id="progressContainer" class="progress-container hidden">
+      <div id="progressBar" class="progress-bar"></div>
+      <div id="progressText" class="progress-text">0%</div>
     </div>
 
     <button type="submit" id="submitBtn">Wyślij zgłoszenie</button>
@@ -149,6 +244,11 @@
   </form>
 
   <script>
+    // Konfiguracja
+    const API_ENDPOINT = 'https://script.google.com/macros/s/AKfycbyoUpDs6_qJb-3fFmGjx_WttJH496ipsz6uQCt79IuymKlMqpC87sA6Me8JJGSk7YmMdA/exec';
+    const MAX_CHUNK_SIZE = 512 * 1024; // 512KB na fragment
+    const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB maksymalny rozmiar pliku
+
     // Załaduj listę kateringów z pliku JSON
     async function fetchKateringList() {
       try {
@@ -189,6 +289,70 @@
       }
     }
 
+    // Obsługa plików i podglądu
+    function setupFilePreview(inputId, previewContainerId) {
+      const fileInput = document.getElementById(inputId);
+      const previewContainer = document.getElementById(previewContainerId);
+      
+      fileInput.addEventListener('change', function() {
+        previewContainer.innerHTML = '';
+        
+        if (this.files.length > 0) {
+          Array.from(this.files).forEach((file, index) => {
+            if (file.type.startsWith('image/')) {
+              const reader = new FileReader();
+              
+              reader.onload = function(e) {
+                const previewItem = document.createElement('div');
+                previewItem.className = 'preview-item';
+                
+                const img = document.createElement('img');
+                img.src = e.target.result;
+                previewItem.appendChild(img);
+                
+                const removeBtn = document.createElement('button');
+                removeBtn.className = 'preview-remove';
+                removeBtn.textContent = '×';
+                removeBtn.addEventListener('click', function() {
+                  // Nie można bezpośrednio usunąć pliku z FileList, więc trzeba będzie zresetować input
+                  // i obsłużyć to na poziomie wysyłania
+                  previewItem.remove();
+                });
+                previewItem.appendChild(removeBtn);
+                
+                previewContainer.appendChild(previewItem);
+              };
+              
+              reader.readAsDataURL(file);
+            } else if (file.type.startsWith('video/')) {
+              // Dla filmów tworzymy specjalny placeholder
+              const previewItem = document.createElement('div');
+              previewItem.className = 'preview-item';
+              previewItem.style.display = 'flex';
+              previewItem.style.alignItems = 'center';
+              previewItem.style.justifyContent = 'center';
+              previewItem.style.backgroundColor = '#f8f9fa';
+              
+              const videoIcon = document.createElement('div');
+              videoIcon.textContent = '🎬';
+              videoIcon.style.fontSize = '24px';
+              previewItem.appendChild(videoIcon);
+              
+              const removeBtn = document.createElement('button');
+              removeBtn.className = 'preview-remove';
+              removeBtn.textContent = '×';
+              removeBtn.addEventListener('click', function() {
+                previewItem.remove();
+              });
+              previewItem.appendChild(removeBtn);
+              
+              previewContainer.appendChild(previewItem);
+            }
+          });
+        }
+      });
+    }
+
     // Obsługa zmiany rodzaju zdarzenia
     document.getElementById("zdarzenie").addEventListener("change", function() {
       const val = this.value;
@@ -217,6 +381,236 @@
         document.getElementById("opis").setAttribute("required", "");
       }
     });
+
+    // Funkcja do podziału pliku na fragmenty
+    function sliceFile(file, chunkSize) {
+      const chunks = [];
+      let start = 0;
+      
+      while (start < file.size) {
+        const end = Math.min(start + chunkSize, file.size);
+        chunks.push(file.slice(start, end));
+        start = end;
+      }
+      
+      return chunks;
+    }
+
+    // Funkcja do przesyłania pliku po kawałkach
+    async function uploadFileInChunks(file, folderName, fieldName, onProgress) {
+      if (file.size > MAX_FILE_SIZE) {
+        throw new Error(`Plik ${file.name} jest za duży (maksymalnie ${MAX_FILE_SIZE / (1024 * 1024)}MB)`);
+      }
+      
+      // Uzyskaj token sesji przed rozpoczęciem przesyłania
+      const sessionResponse = await fetch(`${API_ENDPOINT}?action=initializeUpload`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          filename: file.name,
+          mimeType: file.type,
+          size: file.size,
+          folderName: folderName,
+          fieldName: fieldName
+        })
+      });
+      
+      const sessionData = await sessionResponse.json();
+      
+      if (!sessionData.success) {
+        throw new Error(`Nie udało się zainicjować sesji przesyłania: ${sessionData.error}`);
+      }
+      
+      const sessionId = sessionData.sessionId;
+      const chunks = sliceFile(file, MAX_CHUNK_SIZE);
+      let uploadedChunks = 0;
+      
+      for (let i = 0; i < chunks.length; i++) {
+        const chunk = chunks[i];
+        const reader = new FileReader();
+        
+        // Użyj promise dla czytelności
+        const chunkDataPromise = new Promise((resolve, reject) => {
+          reader.onload = () => resolve(reader.result.split(',')[1]); // Pobierz tylko dane base64
+          reader.onerror = reject;
+          reader.readAsDataURL(chunk);
+        });
+        
+        const chunkData = await chunkDataPromise;
+        
+        // Wyślij fragment
+        const chunkResponse = await fetch(`${API_ENDPOINT}?action=uploadChunk`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            sessionId: sessionId,
+            chunkIndex: i,
+            totalChunks: chunks.length,
+            data: chunkData
+          })
+        });
+        
+        const chunkResult = await chunkResponse.json();
+        
+        if (!chunkResult.success) {
+          throw new Error(`Błąd podczas przesyłania fragmentu ${i+1}/${chunks.length}: ${chunkResult.error}`);
+        }
+        
+        uploadedChunks++;
+        const progress = Math.round((uploadedChunks / chunks.length) * 100);
+        onProgress(progress);
+      }
+      
+      // Sfinalizuj przesyłanie
+      const finalizeResponse = await fetch(`${API_ENDPOINT}?action=finalizeUpload`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          sessionId: sessionId
+        })
+      });
+      
+      const finalizeResult = await finalizeResponse.json();
+      
+      if (!finalizeResult.success) {
+        throw new Error(`Nie udało się sfinalizować przesyłania: ${finalizeResult.error}`);
+      }
+      
+      return finalizeResult.fileUrl;
+    }
+
+    // Funkcja do przesyłania formularza
+    async function submitForm(formData) {
+      // Ustaw początkowe wartości dla paska postępu
+      const progressBar = document.getElementById('progressBar');
+      const progressText = document.getElementById('progressText');
+      document.getElementById('progressContainer').classList.remove('hidden');
+      
+      try {
+        // Stwórz unikatową nazwę folderu dla tego zgłoszenia
+        const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+        const folderName = `Zdarzenie_${timestamp}`;
+        
+        // Przygotuj dane podstawowe (bez plików)
+        const formDataObj = {};
+        for (const [key, value] of formData.entries()) {
+          if (key !== 'zdjecia_uszkodzen' && key !== 'zdjecia_filmu') {
+            formDataObj[key] = value;
+          }
+        }
+        
+        // Dodaj typ zdarzenia do danych
+        formDataObj.zdarzenie_typ = formDataObj.zdarzenie;
+        
+        // Zainicjalizuj zgłoszenie
+        const initResponse = await fetch(`${API_ENDPOINT}?action=initializeReport`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            folderName: folderName,
+            formData: formDataObj
+          })
+        });
+        
+        const initResult = await initResponse.json();
+        
+        if (!initResult.success) {
+          throw new Error(`Nie udało się zainicjować zgłoszenia: ${initResult.error}`);
+        }
+        
+        const reportId = initResult.reportId;
+        
+        // Przesyłanie plików dla uszkodzeń
+        const fileUrlsUszkodzenia = [];
+        if (formDataObj.zdarzenie === 'USZKODZENIE PACZKI') {
+          const files = document.getElementById('zdjecia_uszkodzen').files;
+          let totalProgress = 0;
+          
+          for (let i = 0; i < files.length; i++) {
+            progressText.textContent = `Przesyłanie zdjęcia ${i+1} z ${files.length}`;
+            
+            const fileUrl = await uploadFileInChunks(
+              files[i], 
+              folderName, 
+              'zdjecia_uszkodzen',
+              (progress) => {
+                progressBar.style.width = `${progress}%`;
+                progressText.textContent = `Przesyłanie zdjęcia ${i+1} z ${files.length}: ${progress}%`;
+              }
+            );
+            
+            fileUrlsUszkodzenia.push(fileUrl);
+            totalProgress = Math.round(((i + 1) / files.length) * 100);
+            progressBar.style.width = `${totalProgress}%`;
+          }
+        }
+        
+        // Przesyłanie plików dla niedoręczonych paczek
+        const fileUrlsFilmy = [];
+        if (formDataObj.zdarzenie === 'NIEDORECZENIE / BŁĘDNY ADRES') {
+          const files = document.getElementById('zdjecia_filmu').files;
+          if (files.length > 0) {
+            progressText.textContent = 'Przesyłanie zdjęć/filmów';
+            progressBar.style.width = '0%';
+            
+            for (let i = 0; i < files.length; i++) {
+              progressText.textContent = `Przesyłanie pliku ${i+1} z ${files.length}`;
+              
+              const fileUrl = await uploadFileInChunks(
+                files[i], 
+                folderName, 
+                'zdjecia_filmu',
+                (progress) => {
+                  progressBar.style.width = `${progress}%`;
+                  progressText.textContent = `Przesyłanie pliku ${i+1} z ${files.length}: ${progress}%`;
+                }
+              );
+              
+              fileUrlsFilmy.push(fileUrl);
+            }
+          }
+        }
+        
+        // Finalizacja zgłoszenia
+        progressText.textContent = 'Finalizowanie zgłoszenia...';
+        progressBar.style.width = '90%';
+        
+        const finalizeReportResponse = await fetch(`${API_ENDPOINT}?action=finalizeReport`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            reportId: reportId,
+            fileUrlsUszkodzenia: fileUrlsUszkodzenia,
+            fileUrlsFilmy: fileUrlsFilmy
+          })
+        });
+        
+        const finalizeReportResult = await finalizeReportResponse.json();
+        
+        if (!finalizeReportResult.success) {
+          throw new Error(`Nie udało się sfinalizować zgłoszenia: ${finalizeReportResult.error}`);
+        }
+        
+        progressBar.style.width = '100%';
+        progressText.textContent = 'Zgłoszenie zostało pomyślnie wysłane!';
+        
+        return finalizeReportResult;
+        
+      } catch (error) {
+        console.error("Błąd podczas wysyłania formularza:", error);
+        throw error;
+      }
+    }
 
     // Obsługa wysłania formularza
     document.getElementById("incidentForm").addEventListener("submit", async function(e) {
@@ -249,15 +643,9 @@
       const formData = new FormData(this);
       formData.append("timestamp", new Date().toISOString());
       
-      // Dodaj rodzaj zdarzenia do formData jeszcze raz, żeby było łatwiej obsłużyć w skrypcie
-      formData.append("zdarzenie_typ", zdarzenie);
-      
       try {
-        // Wyślij dane do Google Apps Script Web App
-        const response = await fetch('https://script.google.com/macros/s/AKfycbwSCuwFCrvQXyBocPcDNYs1DuS1fo4OnRAYv0dDBsPx4gnGggizSP_5iuMBzqwon8u6yQ/exec', {
-          method: 'POST',
-          body: formData
-        });
+        // Wyślij formularz
+        const result = await submitForm(formData);
         
         // Pokaż komunikat sukcesu
         document.getElementById("successMessage").classList.remove("hidden");
@@ -267,6 +655,11 @@
         document.getElementById("poleIlosc").classList.add("hidden");
         document.getElementById("poleUszkodzenie").classList.add("hidden");
         document.getElementById("poleOpisZdjecia").classList.add("hidden");
+        document.getElementById("progressContainer").classList.add("hidden");
+        
+        // Wyczyść podglądy
+        document.getElementById("previewUszkodzenia").innerHTML = '';
+        document.getElementById("previewZdjeciaFilmu").innerHTML = '';
         
         // Ukryj wskaźnik ładowania
         document.getElementById("loadingIndicator").classList.add("hidden");
@@ -279,14 +672,22 @@
         
       } catch (error) {
         console.error("Błąd podczas wysyłania zgłoszenia:", error);
-        alert("Wystąpił błąd podczas wysyłania zgłoszenia. Spróbuj ponownie lub skontaktuj się z administratorem.");
+        alert("Wystąpił błąd podczas wysyłania zgłoszenia: " + error.message);
+        document.getElementById("progressContainer").classList.add("hidden");
         document.getElementById("loadingIndicator").classList.add("hidden");
         document.getElementById("submitBtn").disabled = false;
       }
     });
 
-    // Załaduj listę kateringów przy starcie strony
-    fetchKateringList();
+    // Inicjalizacja
+    document.addEventListener('DOMContentLoaded', function() {
+      // Załaduj listę kateringów
+      fetchKateringList();
+      
+      // Skonfiguruj podgląd plików
+      setupFilePreview('zdjecia_uszkodzen', 'previewUszkodzenia');
+      setupFilePreview('zdjecia_filmu', 'previewZdjeciaFilmu');
+    });
   </script>
 </body>
 </html>
