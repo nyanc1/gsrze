@@ -70,6 +70,7 @@
       border-radius: 6px;
       margin-top: 1rem;
       text-align: center;
+      margin-bottom: 1rem;
     }
   </style>
 </head>
@@ -154,30 +155,34 @@
         const response = await fetch('cateringlist.json');
         const data = await response.json();
         
+        // Załaduj kateringi
         const select = document.getElementById("katering");
         select.innerHTML = '<option value="">-- Wybierz --</option>';
         
-        data.forEach(item => {
+        data.caterings.forEach(name => {
           const option = document.createElement('option');
-          option.value = item.name;
-          option.textContent = item.name;
+          option.value = name;
+          option.textContent = name;
           select.appendChild(option);
         });
         
-        // Opcjonalnie można również załadować miasta i ulice, jeśli są dostępne w pliku JSON
-        if (data[0].miasta) {
-          const datalistMiasta = document.getElementById("listaMiast");
-          data[0].miasta.forEach(miasto => {
-            datalistMiasta.innerHTML += `<option value="${miasto}">`;
-          });
-        }
+        // Załaduj miasta do datalisty
+        const datalistMiasta = document.getElementById("listaMiast");
+        datalistMiasta.innerHTML = '';
+        data.miasta.forEach(miasto => {
+          const option = document.createElement('option');
+          option.value = miasto;
+          datalistMiasta.appendChild(option);
+        });
         
-        if (data[0].ulice) {
-          const datalistUlice = document.getElementById("listaUlic");
-          data[0].ulice.forEach(ulica => {
-            datalistUlice.innerHTML += `<option value="${ulica}">`;
-          });
-        }
+        // Załaduj ulice do datalisty
+        const datalistUlice = document.getElementById("listaUlic");
+        datalistUlice.innerHTML = '';
+        data.ulice.forEach(ulica => {
+          const option = document.createElement('option');
+          option.value = ulica;
+          datalistUlice.appendChild(option);
+        });
       } catch (error) {
         console.error("Błąd podczas ładowania listy kateringów:", error);
         alert("Nie udało się załadować listy kateringów. Odśwież stronę lub skontaktuj się z administratorem.");
@@ -245,8 +250,7 @@
         // Wyślij dane do Google Apps Script Web App
         const response = await fetch('https://script.google.com/macros/s/AKfycbx3JRwjUzlxpKPdAXLQRm9PNHsnqwKuwVgifZdpJnJQH1epSq3tBazEbOmA35mR6fGDyw/exec', {
           method: 'POST',
-          body: formData,
-          mode: 'no-cors'
+          body: formData
         });
         
         // Pokaż komunikat sukcesu
