@@ -53,20 +53,7 @@
     button:hover {
       background-color: #218838;
     }
-    button:disabled {
-      background-color: #6c757d;
-      cursor: not-allowed;
-    }
     .hidden { display: none; }
-    .loading {
-      text-align: center;
-      margin-top: 1rem;
-    }
-    .error {
-      color: #dc3545;
-      margin-top: 0.25rem;
-      font-size: 0.875rem;
-    }
     .success {
       background-color: #d4edda;
       color: #155724;
@@ -75,51 +62,6 @@
       margin-top: 1rem;
       text-align: center;
       margin-bottom: 1rem;
-    }
-    .file-list {
-      margin-top: 0.5rem;
-      border: 1px solid #ddd;
-      border-radius: 4px;
-      padding: 0.5rem;
-      max-height: 150px;
-      overflow-y: auto;
-    }
-    .file-item {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 0.25rem 0;
-      border-bottom: 1px solid #eee;
-    }
-    .file-item:last-child {
-      border-bottom: none;
-    }
-    .file-remove {
-      color: #dc3545;
-      background: none;
-      border: none;
-      cursor: pointer;
-      padding: 0.25rem 0.5rem;
-      margin: 0;
-      width: auto;
-    }
-    .progress-container {
-      width: 100%;
-      background-color: #e9ecef;
-      border-radius: 4px;
-      margin-top: 1rem;
-    }
-    .progress-bar {
-      height: 10px;
-      background-color: #28a745;
-      border-radius: 4px;
-      width: 0%;
-      transition: width 0.3s;
-    }
-    .progress-text {
-      text-align: center;
-      font-size: 0.875rem;
-      margin-top: 0.25rem;
     }
     .preview-container {
       display: flex;
@@ -140,50 +82,41 @@
       height: 100%;
       object-fit: cover;
     }
-    .preview-remove {
-      position: absolute;
-      top: 2px;
-      right: 2px;
-      background: rgba(255, 255, 255, 0.8);
-      border-radius: 50%;
-      width: 20px;
-      height: 20px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      font-size: 14px;
-      line-height: 1;
-      padding: 0;
+    .file-info {
+      margin-top: 0.5rem;
+      font-size: 0.75rem;
+      color: #6c757d;
     }
   </style>
 </head>
 <body>
-  <form id="incidentForm">
-    <h2>Zgłoszenie zdarzenia</h2>
-    <div id="successMessage" class="success hidden">Zgłoszenie zostało wysłane pomyślnie!</div>
+  <!-- Komunikat sukcesu (pokazywany po powrocie z formularza) -->
+  <div id="successMessage" class="success hidden">Zgłoszenie zostało wysłane pomyślnie!</div>
 
-    <label>Miasto
+  <form id="incidentForm" action="https://script.google.com/macros/s/AKfycbyFJiMryK8L6BYd9X5jGdmvDyZtP800eyX_xiAdFhgcx1waN56oMUECva6t9vuIRAjZgw/exec" method="POST" enctype="multipart/form-data">
+    <h2>Zgłoszenie zdarzenia</h2>
+
+    <label for="miasto">Miasto
       <input type="text" name="miasto" id="miasto" list="listaMiast" required>
       <datalist id="listaMiast"></datalist>
     </label>
 
-    <label>Ulica
+    <label for="ulica">Ulica
       <input type="text" name="ulica" id="ulica" list="listaUlic" required>
       <datalist id="listaUlic"></datalist>
     </label>
 
-    <label>Nr domu / mieszkania
+    <label for="numer">Nr domu / mieszkania
       <input type="text" name="numer" id="numer" required>
     </label>
 
-    <label>Nazwa kateringu
+    <label for="katering">Nazwa kateringu
       <select name="katering" id="katering" required>
         <option value="">-- Wybierz --</option>
       </select>
     </label>
 
-    <label>Zdarzenie
+    <label for="zdarzenie">Zdarzenie
       <select name="zdarzenie" id="zdarzenie" required>
         <option value="">-- Wybierz --</option>
         <option value="BRAK PACZKI">BRAK PACZKI</option>
@@ -193,8 +126,11 @@
       </select>
     </label>
 
+    <!-- Ukryte pole dla typu zdarzenia -->
+    <input type="hidden" id="zdarzenie_typ" name="zdarzenie_typ" value="">
+
     <div id="poleIlosc" class="hidden">
-      <label>Ilość paczek
+      <label for="ilosc">Ilość paczek
         <select name="ilosc" id="ilosc">
           <option value="1">1</option>
           <option value="2">2</option>
@@ -206,48 +142,50 @@
     </div>
 
     <div id="poleUszkodzenie" class="hidden">
-      <label>Rodzaj uszkodzenia
+      <label for="rodzaj_uszkodzenia">Rodzaj uszkodzenia
         <select name="rodzaj_uszkodzenia" id="rodzaj_uszkodzenia">
           <option value="ROZSZCZELNIONY POJEMNIK">ROZSZCZELNIONY POJEMNIK</option>
           <option value="USZKODZONY POJEMNIK">USZKODZONY POJEMNIK</option>
         </select>
       </label>
-      <label>
-        Zdjęcia uszkodzeń (wymagane)
+      <label for="zdjecia_uszkodzen">Zdjęcia uszkodzeń (wymagane)
         <input type="file" name="zdjecia_uszkodzen" id="zdjecia_uszkodzen" accept="image/*" multiple>
       </label>
       <div id="previewUszkodzenia" class="preview-container"></div>
-      <div id="fileListUszkodzenia" class="file-list hidden"></div>
+      <div id="fileInfoUszkodzenia" class="file-info"></div>
     </div>
 
     <div id="poleOpisZdjecia" class="hidden">
-      <label>Opis zdarzenia
+      <label for="opis">Opis zdarzenia
         <textarea name="opis" id="opis" rows="4"></textarea>
       </label>
-      <label>
-        Zdjęcia / Film
+      <label for="zdjecia_filmu">Zdjęcia / Film
         <input type="file" name="zdjecia_filmu" id="zdjecia_filmu" accept="image/*,video/*" multiple>
       </label>
       <div id="previewZdjeciaFilmu" class="preview-container"></div>
-      <div id="fileListZdjeciaFilmu" class="file-list hidden"></div>
-    </div>
-
-    <div id="progressContainer" class="progress-container hidden">
-      <div id="progressBar" class="progress-bar"></div>
-      <div id="progressText" class="progress-text">0%</div>
+      <div id="fileInfoFilmu" class="file-info"></div>
     </div>
 
     <button type="submit" id="submitBtn">Wyślij zgłoszenie</button>
-    <div id="loadingIndicator" class="loading hidden">
-      Wysyłanie zgłoszenia, proszę czekać...
-    </div>
   </form>
 
   <script>
-    // Konfiguracja
-    const API_ENDPOINT = 'https://script.google.com/macros/s/AKfycbzMFpTTc-ov6BGIOm5uFcSxy_Mnn47XjiNHDKiKXvayOB4sH40hTj9wFSky30NaelPU/exec';
-    const MAX_CHUNK_SIZE = 512 * 1024; // 512KB na fragment
-    const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB maksymalny rozmiar pliku
+    // Sprawdź, czy użytkownik wrócił z wysłania formularza
+    document.addEventListener('DOMContentLoaded', function() {
+      const urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.get('success') === 'true') {
+        const successMessage = document.getElementById('successMessage');
+        successMessage.classList.remove('hidden');
+        
+        // Ukryj komunikat po 5 sekundach
+        setTimeout(() => {
+          successMessage.classList.add('hidden');
+        }, 5000);
+        
+        // Usuń parametr z URL
+        window.history.replaceState({}, document.title, window.location.pathname);
+      }
+    });
 
     // Załaduj listę kateringów z pliku JSON
     async function fetchKateringList() {
@@ -289,16 +227,25 @@
       }
     }
 
-    // Obsługa plików i podglądu
-    function setupFilePreview(inputId, previewContainerId) {
+    // Obsługa podglądu plików
+    function setupFilePreview(inputId, previewContainerId, fileInfoId) {
       const fileInput = document.getElementById(inputId);
       const previewContainer = document.getElementById(previewContainerId);
+      const fileInfo = document.getElementById(fileInfoId);
       
       fileInput.addEventListener('change', function() {
         previewContainer.innerHTML = '';
         
         if (this.files.length > 0) {
-          Array.from(this.files).forEach((file, index) => {
+          // Aktualizuj informację o liczbie plików
+          fileInfo.textContent = `Wybrano plików: ${this.files.length}`;
+          
+          // Dodaj podgląd dla każdego pliku (maksymalnie 5 dla oszczędności miejsca)
+          const maxPreview = Math.min(this.files.length, 5);
+          
+          for (let i = 0; i < maxPreview; i++) {
+            const file = this.files[i];
+            
             if (file.type.startsWith('image/')) {
               const reader = new FileReader();
               
@@ -308,18 +255,8 @@
                 
                 const img = document.createElement('img');
                 img.src = e.target.result;
+                
                 previewItem.appendChild(img);
-                
-                const removeBtn = document.createElement('button');
-                removeBtn.className = 'preview-remove';
-                removeBtn.textContent = '×';
-                removeBtn.addEventListener('click', function() {
-                  // Nie można bezpośrednio usunąć pliku z FileList, więc trzeba będzie zresetować input
-                  // i obsłużyć to na poziomie wysyłania
-                  previewItem.remove();
-                });
-                previewItem.appendChild(removeBtn);
-                
                 previewContainer.appendChild(previewItem);
               };
               
@@ -332,23 +269,19 @@
               previewItem.style.alignItems = 'center';
               previewItem.style.justifyContent = 'center';
               previewItem.style.backgroundColor = '#f8f9fa';
-              
-              const videoIcon = document.createElement('div');
-              videoIcon.textContent = '🎬';
-              videoIcon.style.fontSize = '24px';
-              previewItem.appendChild(videoIcon);
-              
-              const removeBtn = document.createElement('button');
-              removeBtn.className = 'preview-remove';
-              removeBtn.textContent = '×';
-              removeBtn.addEventListener('click', function() {
-                previewItem.remove();
-              });
-              previewItem.appendChild(removeBtn);
+              previewItem.textContent = '🎬';
+              previewItem.style.fontSize = '24px';
               
               previewContainer.appendChild(previewItem);
             }
-          });
+          }
+          
+          // Jeśli jest więcej plików niż pokazujemy w podglądzie
+          if (this.files.length > maxPreview) {
+            fileInfo.textContent += ` (pokazano ${maxPreview} z ${this.files.length})`;
+          }
+        } else {
+          fileInfo.textContent = '';
         }
       });
     }
@@ -380,247 +313,13 @@
         document.getElementById("poleOpisZdjecia").classList.remove("hidden");
         document.getElementById("opis").setAttribute("required", "");
       }
+      
+      // Ustaw typ zdarzenia w ukrytym polu
+      document.getElementById("zdarzenie_typ").value = val;
     });
 
-    // Funkcja do podziału pliku na fragmenty
-    function sliceFile(file, chunkSize) {
-      const chunks = [];
-      let start = 0;
-      
-      while (start < file.size) {
-        const end = Math.min(start + chunkSize, file.size);
-        chunks.push(file.slice(start, end));
-        start = end;
-      }
-      
-      return chunks;
-    }
-
-    // Funkcja do przesyłania pliku po kawałkach z obsługą CORS
-    async function uploadFileInChunks(file, folderName, fieldName, onProgress) {
-      if (file.size > MAX_FILE_SIZE) {
-        throw new Error(`Plik ${file.name} jest za duży (maksymalnie ${MAX_FILE_SIZE / (1024 * 1024)}MB)`);
-      }
-      
-      // Uzyskaj token sesji przed rozpoczęciem przesyłania
-      const sessionResponse = await fetch(`${API_ENDPOINT}?action=initializeUpload`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          filename: file.name,
-          mimeType: file.type,
-          size: file.size,
-          folderName: folderName,
-          fieldName: fieldName
-        }),
-        mode: 'cors'
-      });
-      
-      const sessionData = await sessionResponse.json();
-      
-      if (!sessionData.success) {
-        throw new Error(`Nie udało się zainicjować sesji przesyłania: ${sessionData.error}`);
-      }
-      
-      const sessionId = sessionData.sessionId;
-      const chunks = sliceFile(file, MAX_CHUNK_SIZE);
-      let uploadedChunks = 0;
-      
-      for (let i = 0; i < chunks.length; i++) {
-        const chunk = chunks[i];
-        const reader = new FileReader();
-        
-        // Użyj promise dla czytelności
-        const chunkDataPromise = new Promise((resolve, reject) => {
-          reader.onload = () => resolve(reader.result.split(',')[1]); // Pobierz tylko dane base64
-          reader.onerror = reject;
-          reader.readAsDataURL(chunk);
-        });
-        
-        const chunkData = await chunkDataPromise;
-        
-        // Wyślij fragment
-        const chunkResponse = await fetch(`${API_ENDPOINT}?action=uploadChunk`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            sessionId: sessionId,
-            chunkIndex: i,
-            totalChunks: chunks.length,
-            data: chunkData
-          }),
-          mode: 'cors'
-        });
-        
-        const chunkResult = await chunkResponse.json();
-        
-        if (!chunkResult.success) {
-          throw new Error(`Błąd podczas przesyłania fragmentu ${i+1}/${chunks.length}: ${chunkResult.error}`);
-        }
-        
-        uploadedChunks++;
-        const progress = Math.round((uploadedChunks / chunks.length) * 100);
-        onProgress(progress);
-      }
-      
-      // Sfinalizuj przesyłanie
-      const finalizeResponse = await fetch(`${API_ENDPOINT}?action=finalizeUpload`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          sessionId: sessionId
-        }),
-        mode: 'cors'
-      });
-      
-      const finalizeResult = await finalizeResponse.json();
-      
-      if (!finalizeResult.success) {
-        throw new Error(`Nie udało się sfinalizować przesyłania: ${finalizeResult.error}`);
-      }
-      
-      return finalizeResult.fileUrl;
-    }
-
-    // Funkcja do przesyłania formularza
-    async function submitForm(formData) {
-      // Ustaw początkowe wartości dla paska postępu
-      const progressBar = document.getElementById('progressBar');
-      const progressText = document.getElementById('progressText');
-      document.getElementById('progressContainer').classList.remove('hidden');
-      
-      try {
-        // Stwórz unikatową nazwę folderu dla tego zgłoszenia
-        const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-        const folderName = `Zdarzenie_${timestamp}`;
-        
-        // Przygotuj dane podstawowe (bez plików)
-        const formDataObj = {};
-        for (const [key, value] of formData.entries()) {
-          if (key !== 'zdjecia_uszkodzen' && key !== 'zdjecia_filmu') {
-            formDataObj[key] = value;
-          }
-        }
-        
-        // Dodaj typ zdarzenia do danych
-        formDataObj.zdarzenie_typ = formDataObj.zdarzenie;
-        
-        // Zainicjalizuj zgłoszenie z obsługą CORS
-        progressText.textContent = 'Inicjalizacja zgłoszenia...';
-        progressBar.style.width = '5%';
-        
-        const initResponse = await fetch(`${API_ENDPOINT}?action=initializeReport`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            folderName: folderName,
-            formData: formDataObj
-          }),
-          mode: 'cors'
-        });
-        
-        const initResult = await initResponse.json();
-        
-        if (!initResult.success) {
-          throw new Error(`Nie udało się zainicjować zgłoszenia: ${initResult.error}`);
-        }
-        
-        const reportId = initResult.reportId;
-        progressBar.style.width = '10%';
-        
-        // Przesyłanie plików dla uszkodzeń
-        const fileUrlsUszkodzenia = [];
-        if (formDataObj.zdarzenie === 'USZKODZENIE PACZKI') {
-          const files = document.getElementById('zdjecia_uszkodzen').files;
-          let totalProgress = 0;
-          
-          for (let i = 0; i < files.length; i++) {
-            progressText.textContent = `Przesyłanie zdjęcia ${i+1} z ${files.length}`;
-            
-            const fileUrl = await uploadFileInChunks(
-              files[i], 
-              folderName, 
-              'zdjecia_uszkodzen',
-              (progress) => {
-                progressBar.style.width = `${10 + (progress * 0.8 / files.length) + (i * 80 / files.length)}%`;
-                progressText.textContent = `Przesyłanie zdjęcia ${i+1} z ${files.length}: ${progress}%`;
-              }
-            );
-            
-            fileUrlsUszkodzenia.push(fileUrl);
-            totalProgress = Math.round(((i + 1) / files.length) * 100);
-          }
-        }
-        
-        // Przesyłanie plików dla niedoręczonych paczek
-        const fileUrlsFilmy = [];
-        if (formDataObj.zdarzenie === 'NIEDORECZENIE / BŁĘDNY ADRES') {
-          const files = document.getElementById('zdjecia_filmu').files;
-          if (files.length > 0) {
-            for (let i = 0; i < files.length; i++) {
-              progressText.textContent = `Przesyłanie pliku ${i+1} z ${files.length}`;
-              
-              const fileUrl = await uploadFileInChunks(
-                files[i], 
-                folderName, 
-                'zdjecia_filmu',
-                (progress) => {
-                  progressBar.style.width = `${10 + (progress * 0.8 / files.length) + (i * 80 / files.length)}%`;
-                  progressText.textContent = `Przesyłanie pliku ${i+1} z ${files.length}: ${progress}%`;
-                }
-              );
-              
-              fileUrlsFilmy.push(fileUrl);
-            }
-          }
-        }
-        
-        // Finalizacja zgłoszenia
-        progressText.textContent = 'Finalizowanie zgłoszenia...';
-        progressBar.style.width = '90%';
-        
-        const finalizeReportResponse = await fetch(`${API_ENDPOINT}?action=finalizeReport`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            reportId: reportId,
-            fileUrlsUszkodzenia: fileUrlsUszkodzenia,
-            fileUrlsFilmy: fileUrlsFilmy
-          }),
-          mode: 'cors'
-        });
-        
-        const finalizeReportResult = await finalizeReportResponse.json();
-        
-        if (!finalizeReportResult.success) {
-          throw new Error(`Nie udało się sfinalizować zgłoszenia: ${finalizeReportResult.error}`);
-        }
-        
-        progressBar.style.width = '100%';
-        progressText.textContent = 'Zgłoszenie zostało pomyślnie wysłane!';
-        
-        return finalizeReportResult;
-        
-      } catch (error) {
-        console.error("Błąd podczas wysyłania formularza:", error);
-        throw error;
-      }
-    }
-
     // Obsługa wysłania formularza
-    document.getElementById("incidentForm").addEventListener("submit", async function(e) {
-      e.preventDefault();
-      
+    document.getElementById("incidentForm").addEventListener("submit", function(e) {
       // Walidacja formularza
       const zdarzenie = document.getElementById("zdarzenie").value;
       
@@ -628,6 +327,7 @@
         const zdjecia = document.getElementById("zdjecia_uszkodzen").files;
         if (zdjecia.length === 0) {
           alert("Dla uszkodzonej paczki wymagane jest załączenie zdjęć!");
+          e.preventDefault(); // Zatrzymaj przesłanie tylko przy błędzie
           return;
         }
       }
@@ -636,52 +336,22 @@
         const opis = document.getElementById("opis").value.trim();
         if (opis === "") {
           alert("Dla niedoręczonej paczki wymagany jest opis!");
+          e.preventDefault(); // Zatrzymaj przesłanie tylko przy błędzie
           return;
         }
       }
       
-      // Pokaż wskaźnik ładowania
-      document.getElementById("loadingIndicator").classList.remove("hidden");
-      document.getElementById("submitBtn").disabled = true;
+      // Ustaw typ zdarzenia w ukrytym polu
+      document.getElementById("zdarzenie_typ").value = zdarzenie;
       
-      // Przygotuj dane formularza
-      const formData = new FormData(this);
-      formData.append("timestamp", new Date().toISOString());
+      // Dodaj datę do formularza
+      const dateInput = document.createElement('input');
+      dateInput.type = 'hidden';
+      dateInput.name = 'timestamp';
+      dateInput.value = new Date().toISOString();
+      this.appendChild(dateInput);
       
-      try {
-        // Wyślij formularz
-        const result = await submitForm(formData);
-        
-        // Pokaż komunikat sukcesu
-        document.getElementById("successMessage").classList.remove("hidden");
-        document.getElementById("incidentForm").reset();
-        
-        // Ukryj dodatkowe pola
-        document.getElementById("poleIlosc").classList.add("hidden");
-        document.getElementById("poleUszkodzenie").classList.add("hidden");
-        document.getElementById("poleOpisZdjecia").classList.add("hidden");
-        document.getElementById("progressContainer").classList.add("hidden");
-        
-        // Wyczyść podglądy
-        document.getElementById("previewUszkodzenia").innerHTML = '';
-        document.getElementById("previewZdjeciaFilmu").innerHTML = '';
-        
-        // Ukryj wskaźnik ładowania
-        document.getElementById("loadingIndicator").classList.add("hidden");
-        document.getElementById("submitBtn").disabled = false;
-        
-        // Ukryj komunikat sukcesu po 5 sekundach
-        setTimeout(() => {
-          document.getElementById("successMessage").classList.add("hidden");
-        }, 5000);
-        
-      } catch (error) {
-        console.error("Błąd podczas wysyłania zgłoszenia:", error);
-        alert("Wystąpił błąd podczas wysyłania zgłoszenia: " + error.message);
-        document.getElementById("progressContainer").classList.add("hidden");
-        document.getElementById("loadingIndicator").classList.add("hidden");
-        document.getElementById("submitBtn").disabled = false;
-      }
+      // Kontynuuj z normalnym przesłaniem formularza
     });
 
     // Inicjalizacja
@@ -690,8 +360,8 @@
       fetchKateringList();
       
       // Skonfiguruj podgląd plików
-      setupFilePreview('zdjecia_uszkodzen', 'previewUszkodzenia');
-      setupFilePreview('zdjecia_filmu', 'previewZdjeciaFilmu');
+      setupFilePreview('zdjecia_uszkodzen', 'previewUszkodzenia', 'fileInfoUszkodzenia');
+      setupFilePreview('zdjecia_filmu', 'previewZdjeciaFilmu', 'fileInfoFilmu');
     });
   </script>
 </body>
